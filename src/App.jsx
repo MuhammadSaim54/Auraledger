@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "./components/Navbar";
 import HeroDeck from "./components/HeroDeck";
+import CashflowMatrix from "./components/CashflowMatrix";
+import CategorySpectrum from "./components/CategorySpectrum";
+import RunwayPredictor from "./components/RunwayPredictor";
 import AuthModal from "./components/AuthModal";
+import ChangePasswordModal from "./components/ChangePasswordModal";
 import LandingHero from "./components/LandingHero";
 
 export default function App() {
@@ -13,6 +17,9 @@ export default function App() {
 
   // Auth Dialog Controller
   const [authDialog, setAuthDialog] = useState({ isOpen: false, mode: "signin" });
+
+  // Change Password Dialog Controller
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     const activeUserId = localStorage.getItem("auraledger_active_user_id");
@@ -100,9 +107,11 @@ export default function App() {
         currentUser={currentUser}
         onSignOut={handleSignOut}
         onOpenNewTransaction={handleOpenNewTransaction}
+        onOpenChangePassword={() => setIsPasswordModalOpen(true)}
       />
 
-      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-8">
+      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-8 space-y-6 sm:space-y-8">
+        {/* Executive Cockpit Header */}
         <HeroDeck 
           userProfile={currentUser} 
           currentCurrency={currentCurrency}
@@ -110,14 +119,50 @@ export default function App() {
           onOpenNewTransaction={handleOpenNewTransaction} 
         />
 
-        <div className="rounded-3xl border border-dashed border-stone-200/90 p-8 sm:p-12 text-center bg-white/50 backdrop-blur-sm">
-          <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">Executive Workspace</p>
-          <h3 className="text-xl font-bold text-zinc-900 capitalize mt-1">{activeTab} Viewport</h3>
-          <p className="text-xs text-zinc-500 mt-1">
-            Active Tenant: <strong className="text-zinc-800">{currentUser.name}</strong> • Isolated Vault ID: <span className="font-mono">{currentUser.id}</span>
-          </p>
-        </div>
+        {/* Phase 3 Analytics Suite (Dashboard View) */}
+        {activeTab === "dashboard" && (
+          <div className="space-y-6 sm:space-y-8">
+            {/* 3.1 Hardware-Accelerated Cashflow Curve */}
+            <CashflowMatrix
+              transactions={transactions}
+              startingBalance={Number(currentUser.startingBalance) || 200000}
+              currentCurrency={currentCurrency}
+            />
+
+            {/* 3.2 & 3.3 Outflow Spectrum & Burn Velocity Engine */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+              <CategorySpectrum 
+                transactions={transactions} 
+                currentCurrency={currentCurrency} 
+              />
+              <RunwayPredictor
+                currentBalance={Number(currentUser.startingBalance) || 200000}
+                transactions={transactions}
+                currentCurrency={currentCurrency}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Modular Viewport for Other Tabs */}
+        {activeTab !== "dashboard" && (
+          <div className="rounded-3xl border border-dashed border-stone-200/90 p-8 sm:p-12 text-center bg-white/50 backdrop-blur-sm">
+            <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">Executive Workspace</p>
+            <h3 className="text-xl font-bold text-zinc-900 capitalize mt-1">{activeTab} Viewport</h3>
+            <p className="text-xs text-zinc-500 mt-1">
+              Active Tenant: <strong className="text-zinc-800">{currentUser.name}</strong> • Isolated Vault ID: <span className="font-mono">{currentUser.id}</span>
+            </p>
+          </div>
+        )}
       </main>
+
+      {/* Change Password Dialog Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        currentUser={currentUser}
+        onPasswordUpdated={(updatedUser) => setCurrentUser(updatedUser)}
+      />
     </div>
   );
 }
