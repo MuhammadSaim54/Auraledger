@@ -11,7 +11,8 @@ import {
     LogOut,
     Mail,
     Phone,
-    ShieldCheck
+    ShieldCheck,
+    KeyRound
 } from "lucide-react";
 import { CURRENCIES } from "../types/models";
 
@@ -29,7 +30,8 @@ export default function Navbar({
     setCurrentCurrency,
     currentUser,
     onSignOut,
-    onOpenNewTransaction
+    onOpenNewTransaction,
+    onOpenChangePassword
 }) {
     const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -227,7 +229,24 @@ export default function Navbar({
                                             </div>
                                         </div>
 
-                                        <div className="pt-1.5 border-t border-stone-100">
+                                        {/* Actions Group */}
+                                        <div className="pt-1.5 border-t border-stone-100 space-y-1">
+                                            {/* Change Password Button */}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsProfileOpen(false);
+                                                    if (onOpenChangePassword) onOpenChangePassword();
+                                                }}
+                                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-mono font-semibold text-zinc-700 hover:bg-stone-100 transition-colors cursor-pointer"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <KeyRound className="w-3.5 h-3.5 text-orange-600" />
+                                                    <span>Change Password</span>
+                                                </span>
+                                            </button>
+
+                                            {/* Sign Out Button */}
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -250,8 +269,7 @@ export default function Navbar({
                 </div>
             </header>
 
-            {/* Ultra-Clean Alabaster Glass Floating Dock (xl:hidden) */}
-            {/* Dynamic Expanding Porcelain Glass Dock with Framer Motion (xl:hidden) */}
+            {/* Dynamic Expanding Porcelain Glass Dock (xl:hidden) */}
             <div className="xl:hidden fixed bottom-6 inset-x-0 z-50 px-4 pointer-events-none flex justify-center">
                 <motion.nav
                     layout
@@ -272,7 +290,6 @@ export default function Navbar({
                                 className={`relative py-2.5 px-3.5 rounded-full flex items-center gap-2 cursor-pointer select-none transition-colors ${isActive ? "text-orange-950 font-semibold" : "text-stone-400 hover:text-stone-700"
                                     }`}
                             >
-                                {/* Active Spring Gliding Pill Indicator */}
                                 {isActive && (
                                     <motion.div
                                         layoutId="dynamic-island-pill"
@@ -281,7 +298,6 @@ export default function Navbar({
                                     />
                                 )}
 
-                                {/* Animated Icon */}
                                 <motion.div
                                     animate={{
                                         scale: isActive ? 1.12 : 1,
@@ -296,7 +312,6 @@ export default function Navbar({
                                     />
                                 </motion.div>
 
-                                {/* Expanding Active Label with Spring Physics */}
                                 <AnimatePresence mode="popLayout" initial={false}>
                                     {isActive && (
                                         <motion.span
