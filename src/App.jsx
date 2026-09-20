@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./components/Navbar";
 import HeroDeck from "./components/HeroDeck";
 import CashflowMatrix from "./components/CashflowMatrix";
@@ -13,6 +13,8 @@ import BotanicalCradle from "./components/BotanicalCradle";
 import AuthModal from "./components/AuthModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
 import TransactionModal from "./components/TransactionModal";
+import CommandPalette from "./components/CommandPalette";
+import RestoreModal from "./components/RestoreModal";
 import LandingHero from "./components/LandingHero";
 
 export default function App() {
@@ -22,14 +24,12 @@ export default function App() {
   const [transactions, setTransactions] = useState([]);
   const [vaultTransfers, setVaultTransfers] = useState([]);
 
-  // Auth Dialog Controller
+  // Modals & Palette Controllers
   const [authDialog, setAuthDialog] = useState({ isOpen: false, mode: "signin" });
-
-  // Change Password Dialog Controller
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-
-  // Fast Ingest Transaction Modal Controller
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
 
   // Initial User Session Loader
   useEffect(() => {
@@ -46,16 +46,61 @@ export default function App() {
     }
   }, []);
 
-  // Top Scroll Reset on Viewport / Tab Transition
+  // Top Scroll Reset on Tab Switch
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "instant"
-    });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }, [activeTab]);
+
+  // Global Keyboard Shortcuts Engine
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore if user is inside an input, textarea, or select
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      const isInputActive = activeTag === "input" || activeTag === "textarea" || activeTag === "select";
+
+      // 1. Cmd+K / Ctrl+K Toggle (Always Active)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+        return;
+      }
+
+      if (isInputActive || isCommandPaletteOpen || isTxModalOpen || isPasswordModalOpen) {
+        return;
+      }
+
+      // 2. Single-Key Sovereign Shortcuts
+      switch (e.key.toLowerCase()) {
+        case "n":
+          e.preventDefault();
+          setIsTxModalOpen(true);
+          break;
+        case "d":
+          e.preventDefault();
+          setActiveTab("dashboard");
+          break;
+        case "l":
+          e.preventDefault();
+          setActiveTab("ledger");
+          break;
+        case "a":
+          e.preventDefault();
+          setActiveTab("analytics");
+          break;
+        case "v":
+          e.preventDefault();
+          setActiveTab("vaults");
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCommandPaletteOpen, isTxModalOpen, isPasswordModalOpen]);
 
   const loadUserData = useCallback((userId) => {
     const userStorageKey = `auraledger_data_${userId}`;
@@ -85,93 +130,51 @@ export default function App() {
     setVaultTransfers([]);
   };
 
-  const handleOpenAuth = (mode = "signin") => {
-    setAuthDialog({ isOpen: true, mode });
-  };
-
-  const handleCloseAuth = () => {
-    setAuthDialog({ isOpen: false, mode: "signin" });
-  };
-
-  const handleOpenNewTransaction = () => {
-    setIsTxModalOpen(true);
-  };
-
-  // Transaction Creation Handler
+  // Transaction Actions
   const handleCreateTransaction = (newTx) => {
     if (!currentUser) return;
-
-    const updatedTransactions = [newTx, ...transactions];
-    setTransactions(updatedTransactions);
+    const updated = [newTx, ...transactions];
+    setTransactions(updated);
 
     const userStorageKey = `auraledger_data_${currentUser.id}`;
-    const existingData = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
-    
-    const payload = {
-      ...existingData,
-      transactions: updatedTransactions,
-      vaultTransfers
-    };
-
-    localStorage.setItem(userStorageKey, JSON.stringify(payload));
+    const existing = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
+    localStorage.setItem(userStorageKey, JSON.stringify({ ...existing, transactions: updated, vaultTransfers }));
   };
 
-  // Transaction Delete Handler
   const handleDeleteTransaction = (txId) => {
     if (!currentUser) return;
-
-    const updatedTransactions = transactions.filter((t) => t.id !== txId);
-    setTransactions(updatedTransactions);
+    const updated = transactions.filter((t) => t.id !== txId);
+    setTransactions(updated);
 
     const userStorageKey = `auraledger_data_${currentUser.id}`;
-    const existingData = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
-    
-    const payload = {
-      ...existingData,
-      transactions: updatedTransactions,
-      vaultTransfers
-    };
-
-    localStorage.setItem(userStorageKey, JSON.stringify(payload));
+    const existing = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
+    localStorage.setItem(userStorageKey, JSON.stringify({ ...existing, transactions: updated, vaultTransfers }));
   };
 
-  // Internal Vault Transfer Handler
   const handleExecuteVaultTransfer = (transferData) => {
     if (!currentUser) return;
-
-    const updatedTransfers = [transferData, ...vaultTransfers];
-    setVaultTransfers(updatedTransfers);
+    const updated = [transferData, ...vaultTransfers];
+    setVaultTransfers(updated);
 
     const userStorageKey = `auraledger_data_${currentUser.id}`;
-    const existingData = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
-
-    const payload = {
-      ...existingData,
-      transactions,
-      vaultTransfers: updatedTransfers
-    };
-
-    localStorage.setItem(userStorageKey, JSON.stringify(payload));
+    const existing = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
+    localStorage.setItem(userStorageKey, JSON.stringify({ ...existing, transactions, vaultTransfers: updated }));
   };
 
-  // Sovereign Disaster Recovery: Restore Backup Handler
   const handleRestoreBackup = ({ transactions: newTxList, vaultTransfers: newTrList }) => {
     if (!currentUser) return;
-
     setTransactions(newTxList);
     setVaultTransfers(newTrList);
 
     const userStorageKey = `auraledger_data_${currentUser.id}`;
-    const payload = {
+    localStorage.setItem(userStorageKey, JSON.stringify({
       transactions: newTxList,
       vaultTransfers: newTrList,
       restoredAt: new Date().toISOString()
-    };
-
-    localStorage.setItem(userStorageKey, JSON.stringify(payload));
+    }));
   };
 
-  // Live Net Balance Computation
+  // Compute Live Balances
   const currentNetLiquidity = useMemo(() => {
     const base = Number(currentUser?.startingBalance) || 0;
     const netDelta = transactions.reduce((acc, tx) => {
@@ -181,10 +184,8 @@ export default function App() {
     return Math.max(0, base + netDelta);
   }, [currentUser, transactions]);
 
-  // Dynamic Vault Balances Computation
   const vaultBalances = useMemo(() => {
     const totalBase = Number(currentUser?.startingBalance) || 0;
-
     let primary = totalBase * 0.5;
     let reserve = totalBase * 0.3;
     let growth = totalBase * 0.2;
@@ -217,48 +218,38 @@ export default function App() {
     };
   }, [currentUser, transactions, vaultTransfers]);
 
-  // 1. Landing View for Non-authenticated State
   if (!currentUser) {
     return (
       <>
-        <LandingHero onOpenAuth={handleOpenAuth} />
+        <LandingHero onOpenAuth={(mode) => setAuthDialog({ isOpen: true, mode: mode || "signin" })} />
         {authDialog.isOpen && (
           <AuthModal
             initialMode={authDialog.mode}
             onAuthSuccess={handleAuthSuccess}
-            onClose={handleCloseAuth}
+            onClose={() => setAuthDialog({ isOpen: false, mode: "signin" })}
           />
         )}
       </>
     );
   }
 
-  // 2. Main Executive Operating System Shell
   return (
     <div className="min-h-screen w-full bg-[#fbfaf8] text-zinc-900 pb-28 font-sans relative">
-      {/* Living Atmospheric Aurora Glows */}
+      {/* Living Atmospheric Glows */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <motion.div 
-          animate={{
-            scale: [1, 1.25, 1],
-            rotate: [0, 45, 0],
-            opacity: [0.22, 0.35, 0.22]
-          }}
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 45, 0], opacity: [0.2, 0.35, 0.2] }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
           className="absolute -top-40 right-10 w-[650px] h-[650px] bg-gradient-to-bl from-orange-300/30 via-amber-200/20 to-transparent rounded-full blur-[100px]" 
         />
         <motion.div 
-          animate={{
-            scale: [1.1, 0.9, 1.1],
-            rotate: [0, -35, 0],
-            opacity: [0.18, 0.3, 0.18]
-          }}
+          animate={{ scale: [1.1, 0.9, 1.1], rotate: [0, -35, 0], opacity: [0.18, 0.3, 0.18] }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-80 -left-20 w-[550px] h-[550px] bg-gradient-to-tr from-amber-200/35 via-orange-100/20 to-transparent rounded-full blur-[100px]" 
         />
       </div>
 
-      {/* Tactile FinOS Navbar */}
+      {/* Tactile Navbar with Cmd+K Trigger Badge */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -266,27 +257,22 @@ export default function App() {
         setCurrentCurrency={setCurrentCurrency}
         currentUser={currentUser}
         onSignOut={handleSignOut}
-        onOpenNewTransaction={handleOpenNewTransaction}
+        onOpenNewTransaction={() => setIsTxModalOpen(true)}
         onOpenChangePassword={() => setIsPasswordModalOpen(true)}
       />
 
       <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-8 pt-4 space-y-6 sm:space-y-8">
-        {/* Executive Cockpit Header */}
         <HeroDeck 
           userProfile={currentUser} 
           currentCurrency={currentCurrency}
           transactions={transactions}
-          onOpenNewTransaction={handleOpenNewTransaction} 
+          onOpenNewTransaction={() => setIsTxModalOpen(true)} 
         />
 
         {/* 1. Dashboard Viewport */}
         {activeTab === "dashboard" && (
           <div className="space-y-8 sm:space-y-12 select-none">
-            {/* Cashflow Matrix: Flagship Parallax Monolith */}
-            <ParallaxMonolithCard
-              floatDelay={0}
-              accentGlow="rgba(234, 88, 12, 0.2)"
-            >
+            <ParallaxMonolithCard floatDelay={0} accentGlow="rgba(234, 88, 12, 0.2)">
               <CashflowMatrix
                 transactions={transactions}
                 startingBalance={currentNetLiquidity}
@@ -294,23 +280,12 @@ export default function App() {
               />
             </ParallaxMonolithCard>
 
-            {/* Asymmetrical Floating Dual Tier with Botanical Leaf Cradles */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-14 pt-4 sm:[transform-style:preserve-3d]">
-              {/* Left Card: Emerald Botanical Canopy Cradle */}
               <BotanicalCradle variant="emerald" floatDelay={0}>
-                <CategorySpectrum 
-                  transactions={transactions} 
-                  currentCurrency={currentCurrency} 
-                />
+                <CategorySpectrum transactions={transactions} currentCurrency={currentCurrency} />
               </BotanicalCradle>
-
-              {/* Right Card: Amber Botanical Canopy Cradle */}
               <BotanicalCradle variant="amber" floatDelay={0.4}>
-                <RunwayPredictor
-                  currentBalance={currentNetLiquidity}
-                  transactions={transactions}
-                  currentCurrency={currentCurrency}
-                />
+                <RunwayPredictor currentBalance={currentNetLiquidity} transactions={transactions} currentCurrency={currentCurrency} />
               </BotanicalCradle>
             </div>
           </div>
@@ -325,7 +300,7 @@ export default function App() {
           />
         )}
 
-        {/* 3. Ledger Viewport (Connected to Phase 9 Restore Engine) */}
+        {/* 3. Ledger Viewport */}
         {activeTab === "ledger" && (
           <LedgerViewport
             transactions={transactions}
@@ -347,33 +322,39 @@ export default function App() {
             currentCurrency={currentCurrency}
           />
         )}
-
-        {/* 5. Executive Workspaces */}
-        {activeTab !== "dashboard" && activeTab !== "analytics" && activeTab !== "ledger" && activeTab !== "vaults" && (
-          <div className="rounded-3xl border border-dashed border-stone-200/90 p-8 sm:p-12 text-center bg-white/50 backdrop-blur-sm">
-            <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">Executive Workspace</p>
-            <h3 className="text-xl font-bold text-zinc-900 capitalize mt-1">{activeTab} Viewport</h3>
-            <p className="text-xs text-zinc-500 mt-1">
-              Active Tenant: <strong className="text-zinc-800">{currentUser.name}</strong> • Isolated Vault ID: <span className="font-mono">{currentUser.id}</span>
-            </p>
-          </div>
-        )}
       </main>
 
-      {/* Change Password Dialog Modal */}
+      {/* Global Command Palette (Cmd+K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        setActiveTab={setActiveTab}
+        onOpenNewTransaction={() => setIsTxModalOpen(true)}
+        onOpenRestore={() => setIsRestoreModalOpen(true)}
+        onOpenChangePassword={() => setIsPasswordModalOpen(true)}
+        setCurrentCurrency={setCurrentCurrency}
+        currentCurrency={currentCurrency}
+      />
+
+      {/* Modals */}
       <ChangePasswordModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
         currentUser={currentUser}
-        onPasswordUpdated={(updatedUser) => setCurrentUser(updatedUser)}
+        onPasswordUpdated={(u) => setCurrentUser(u)}
       />
 
-      {/* Fast Ingestion Transaction Modal */}
       <TransactionModal
         isOpen={isTxModalOpen}
         onClose={() => setIsTxModalOpen(false)}
         onSubmit={handleCreateTransaction}
         currentCurrency={currentCurrency}
+      />
+
+      <RestoreModal
+        isOpen={isRestoreModalOpen}
+        onClose={() => setIsRestoreModalOpen(false)}
+        onRestoreSuccess={handleRestoreBackup}
       />
     </div>
   );
