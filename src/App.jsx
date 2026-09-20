@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Navbar from "./components/Navbar";
 import HeroDeck from "./components/HeroDeck";
 import CashflowMatrix from "./components/CashflowMatrix";
 import CategorySpectrum from "./components/CategorySpectrum";
 import RunwayPredictor from "./components/RunwayPredictor";
+import LedgerViewport from "./components/LedgerViewport";
+import AnalyticsViewport from "./components/AnalyticsViewport";
 import AuthModal from "./components/AuthModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
+import TransactionModal from "./components/TransactionModal";
 import LandingHero from "./components/LandingHero";
 
 export default function App() {
@@ -20,6 +23,9 @@ export default function App() {
 
   // Change Password Dialog Controller
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+  // Fast Ingest Transaction Modal Controller
+  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
 
   useEffect(() => {
     const activeUserId = localStorage.getItem("auraledger_active_user_id");
@@ -72,8 +78,56 @@ export default function App() {
   };
 
   const handleOpenNewTransaction = () => {
-    console.log("Open Fast Ingest Modal for User:", currentUser?.name);
+    setIsTxModalOpen(true);
   };
+
+  // Transaction Creation Handler
+  const handleCreateTransaction = (newTx) => {
+    if (!currentUser) return;
+
+    const updatedTransactions = [newTx, ...transactions];
+    setTransactions(updatedTransactions);
+
+    const userStorageKey = `auraledger_data_${currentUser.id}`;
+    const existingData = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
+    
+    const payload = {
+      ...existingData,
+      transactions: updatedTransactions,
+      vaults: vaults.length > 0 ? vaults : existingData.vaults || []
+    };
+
+    localStorage.setItem(userStorageKey, JSON.stringify(payload));
+  };
+
+  // Transaction Delete Handler
+  const handleDeleteTransaction = (txId) => {
+    if (!currentUser) return;
+
+    const updatedTransactions = transactions.filter((t) => t.id !== txId);
+    setTransactions(updatedTransactions);
+
+    const userStorageKey = `auraledger_data_${currentUser.id}`;
+    const existingData = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
+    
+    const payload = {
+      ...existingData,
+      transactions: updatedTransactions,
+      vaults: vaults.length > 0 ? vaults : existingData.vaults || []
+    };
+
+    localStorage.setItem(userStorageKey, JSON.stringify(payload));
+  };
+
+  // Live Net Balance Computation
+  const currentNetLiquidity = useMemo(() => {
+    const base = Number(currentUser?.startingBalance) || 0;
+    const netDelta = transactions.reduce((acc, tx) => {
+      const amt = Number(tx.amount) || 0;
+      return tx.type === "income" ? acc + amt : acc - amt;
+    }, 0);
+    return Math.max(0, base + netDelta);
+  }, [currentUser, transactions]);
 
   // 1. If NO USER IS LOGGED IN -> Show Premium Landing Page
   if (!currentUser) {
@@ -119,24 +173,22 @@ export default function App() {
           onOpenNewTransaction={handleOpenNewTransaction} 
         />
 
-        {/* Phase 3 Analytics Suite (Dashboard View) */}
+        {/* 1. Dashboard Viewport */}
         {activeTab === "dashboard" && (
           <div className="space-y-6 sm:space-y-8">
-            {/* 3.1 Hardware-Accelerated Cashflow Curve */}
             <CashflowMatrix
               transactions={transactions}
-              startingBalance={Number(currentUser.startingBalance) || 200000}
+              startingBalance={currentNetLiquidity}
               currentCurrency={currentCurrency}
             />
 
-            {/* 3.2 & 3.3 Outflow Spectrum & Burn Velocity Engine */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
               <CategorySpectrum 
                 transactions={transactions} 
                 currentCurrency={currentCurrency} 
               />
               <RunwayPredictor
-                currentBalance={Number(currentUser.startingBalance) || 200000}
+                currentBalance={currentNetLiquidity}
                 transactions={transactions}
                 currentCurrency={currentCurrency}
               />
@@ -144,8 +196,26 @@ export default function App() {
           </div>
         )}
 
-        {/* Modular Viewport for Other Tabs */}
-        {activeTab !== "dashboard" && (
+        {/* 2. Analytics Viewport */}
+        {activeTab === "analytics" && (
+          <AnalyticsViewport
+            transactions={transactions}
+            currentNetLiquidity={currentNetLiquidity}
+            currentCurrency={currentCurrency}
+          />
+        )}
+
+        {/* 3. Ledger Viewport */}
+        {activeTab === "ledger" && (
+          <LedgerViewport
+            transactions={transactions}
+            onDeleteTransaction={handleDeleteTransaction}
+            currentCurrency={currentCurrency}
+          />
+        )}
+
+        {/* 4. Modular Viewport for Other Tabs (Vaults / Settings) */}
+        {activeTab !== "dashboard" && activeTab !== "analytics" && activeTab !== "ledger" && (
           <div className="rounded-3xl border border-dashed border-stone-200/90 p-8 sm:p-12 text-center bg-white/50 backdrop-blur-sm">
             <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">Executive Workspace</p>
             <h3 className="text-xl font-bold text-zinc-900 capitalize mt-1">{activeTab} Viewport</h3>
@@ -162,6 +232,14 @@ export default function App() {
         onClose={() => setIsPasswordModalOpen(false)}
         currentUser={currentUser}
         onPasswordUpdated={(updatedUser) => setCurrentUser(updatedUser)}
+      />
+
+      {/* Fast Ingestion Transaction Modal */}
+      <TransactionModal
+        isOpen={isTxModalOpen}
+        onClose={() => setIsTxModalOpen(false)}
+        onSubmit={handleCreateTransaction}
+        currentCurrency={currentCurrency}
       />
     </div>
   );
