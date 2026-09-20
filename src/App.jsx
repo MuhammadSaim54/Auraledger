@@ -218,8 +218,8 @@ export default function App() {
 
   // 2. Main Executive Operating System Shell
   return (
-    <div className="min-h-screen w-full bg-[#fbfaf8] text-zinc-900 pb-28 font-sans">
-      {/* Living Atmospheric Aurora Glows (Fixed to prevent sticky scroll conflicts) */}
+    <div className="min-h-screen w-full bg-[#fbfaf8] text-zinc-900 pb-28 font-sans relative">
+      {/* Living Atmospheric Aurora Glows */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <motion.div 
           animate={{
@@ -241,7 +241,7 @@ export default function App() {
         />
       </div>
 
-      {/* Sticky Custom Tactile FinOS Navbar */}
+      {/* Tactile FinOS Navbar (Renders both Top Sticky Bar & Bottom Mobile Dock cleanly) */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -308,12 +308,14 @@ export default function App() {
           />
         )}
 
-        {/* 3. Ledger Viewport */}
+        {/* 3. Ledger Viewport (Connected to Phase 7 Export Suite) */}
         {activeTab === "ledger" && (
           <LedgerViewport
             transactions={transactions}
             onDeleteTransaction={handleDeleteTransaction}
             currentCurrency={currentCurrency}
+            currentUser={currentUser}
+            vaultTransfers={vaultTransfers}
           />
         )}
 
