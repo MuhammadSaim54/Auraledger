@@ -1,0 +1,24 @@
+{
+  "short_name": "AuraLedger",
+  "name": "AuraLedger FinOS • Sovereign Financial Suite",
+  "description": "Tactical sovereign FinOS with multi-vault partitioning, offline audit suites, and institutional analytics.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fbfaf8",
+  "theme_color": "#fbfaf8",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
