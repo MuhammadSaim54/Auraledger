@@ -154,6 +154,23 @@ export default function App() {
     localStorage.setItem(userStorageKey, JSON.stringify(payload));
   };
 
+  // Sovereign Disaster Recovery: Restore Backup Handler
+  const handleRestoreBackup = ({ transactions: newTxList, vaultTransfers: newTrList }) => {
+    if (!currentUser) return;
+
+    setTransactions(newTxList);
+    setVaultTransfers(newTrList);
+
+    const userStorageKey = `auraledger_data_${currentUser.id}`;
+    const payload = {
+      transactions: newTxList,
+      vaultTransfers: newTrList,
+      restoredAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(userStorageKey, JSON.stringify(payload));
+  };
+
   // Live Net Balance Computation
   const currentNetLiquidity = useMemo(() => {
     const base = Number(currentUser?.startingBalance) || 0;
@@ -241,7 +258,7 @@ export default function App() {
         />
       </div>
 
-      {/* Tactile FinOS Navbar (Renders both Top Sticky Bar & Bottom Mobile Dock cleanly) */}
+      {/* Tactile FinOS Navbar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -308,7 +325,7 @@ export default function App() {
           />
         )}
 
-        {/* 3. Ledger Viewport (Connected to Phase 7 Export Suite) */}
+        {/* 3. Ledger Viewport (Connected to Phase 9 Restore Engine) */}
         {activeTab === "ledger" && (
           <LedgerViewport
             transactions={transactions}
@@ -316,6 +333,7 @@ export default function App() {
             currentCurrency={currentCurrency}
             currentUser={currentUser}
             vaultTransfers={vaultTransfers}
+            onRestoreBackup={handleRestoreBackup}
           />
         )}
 
