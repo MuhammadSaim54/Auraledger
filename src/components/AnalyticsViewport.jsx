@@ -13,36 +13,42 @@ import {
   RotateCcw,
   Sparkles,
   Layers,
-  Server,
-  Cpu,
+  ShoppingBag,
+  Utensils,
+  Code2,
+  Shirt,
   Home,
-  Briefcase
+  Briefcase,
+  PiggyBank
 } from "lucide-react";
 import { formatCurrency } from "../utils/formatters";
+import { CATEGORIES } from "../types/models";
 import BotanicalCradle from "./BotanicalCradle";
 
-const CATEGORY_ICONS = {
-  servers: Server,
-  saas: Layers,
-  hardware: Cpu,
-  living: Home,
-  misc: Briefcase,
+// Mapped directly to AuraLedger standard CATEGORIES
+const CATEGORY_ICON_MAP = {
+  groceries: ShoppingBag,
+  dining: Utensils,
+  dev: Code2,
+  lifestyle: Shirt,
+  housing: Home,
   freelance: Briefcase,
-  investment: TrendingUp
+  investments: PiggyBank
 };
 
 export default function AnalyticsViewport({ 
   transactions = [], 
-  currentNetLiquidity = 200000, 
+  currentNetLiquidity = 0, 
   currentCurrency = "USD" 
 }) {
   const [burnDeltaPercent, setBurnDeltaPercent] = useState(0);
+  const [timeHorizon, setTimeHorizon] = useState("30d");
 
   const stats = useMemo(() => {
     let totalInflow = 0;
     let totalOutflow = 0;
     let maxSingleOutflow = { amount: 0, desc: "None", date: "-" };
-    let categoryTally = {};
+    const categoryTally = {};
 
     transactions.forEach((tx) => {
       const amt = Number(tx.amount) || 0;
@@ -53,11 +59,11 @@ export default function AnalyticsViewport({
         if (amt > maxSingleOutflow.amount) {
           maxSingleOutflow = {
             amount: amt,
-            desc: tx.description || "Capital Outflow",
-            date: new Date(tx.date || tx.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+            desc: tx.title || tx.description || "Capital Outflow",
+            date: tx.date ? new Date(tx.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "-"
           };
         }
-        const cat = tx.category || "misc";
+        const cat = tx.category || "groceries";
         categoryTally[cat] = (categoryTally[cat] || 0) + amt;
       }
     });
@@ -67,7 +73,7 @@ export default function AnalyticsViewport({
       ? Math.max(0, Math.round((netSurplus / totalInflow) * 100)) 
       : 0;
 
-    const baseDailyBurn = totalOutflow > 0 ? totalOutflow / 30 : 250;
+    const baseDailyBurn = totalOutflow > 0 ? totalOutflow / 30 : 0;
     const baseMonthsRunway = baseDailyBurn > 0 ? Math.round((currentNetLiquidity / (baseDailyBurn * 30)) * 10) / 10 : 99;
 
     const adjustedDailyBurn = baseDailyBurn * (1 + burnDeltaPercent / 100);
@@ -77,11 +83,16 @@ export default function AnalyticsViewport({
     const runwayDifference = Math.round((simulatedMonths - baseMonthsRunway) * 10) / 10;
 
     const sortedCategories = Object.entries(categoryTally)
-      .map(([cat, amount]) => ({
-        id: cat,
-        amount,
-        percentage: totalOutflow > 0 ? Math.round((amount / totalOutflow) * 100) : 0
-      }))
+      .map(([catId, amount]) => {
+        const meta = CATEGORIES.find((c) => c.id === catId) || { label: catId, color: "#ea580c" };
+        return {
+          id: catId,
+          label: meta.label,
+          color: meta.color,
+          amount,
+          percentage: totalOutflow > 0 ? Math.round((amount / totalOutflow) * 100) : 0
+        };
+      })
       .sort((a, b) => b.amount - a.amount);
 
     return {
@@ -103,6 +114,7 @@ export default function AnalyticsViewport({
 
   return (
     <div className="relative space-y-8 sm:space-y-12 select-none pb-28 [perspective:1400px]">
+      
       {/* 1. Header Micro-Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
         <div className="p-4 sm:p-5 rounded-[26px] bg-white/85 backdrop-blur-xl border border-white/90 shadow-[0_15px_35px_-12px_rgba(0,0,0,0.04)] flex items-center justify-between">
@@ -266,7 +278,6 @@ export default function AnalyticsViewport({
 
       {/* 3. Inflow & Outflow Cradles (Botanical Sculptures) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-14 pt-2 [transform-style:preserve-3d]">
-        {/* Left: Emerald Inflow Cradle */}
         <BotanicalCradle variant="emerald" floatDelay={0.1}>
           <div className="p-6 sm:p-7 rounded-[36px] bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.06),0_0_30px_rgba(255,255,255,0.9)_inset] flex flex-col justify-between">
             <div>
@@ -314,7 +325,6 @@ export default function AnalyticsViewport({
           </div>
         </BotanicalCradle>
 
-        {/* Right: Amber Drain Cradle */}
         <BotanicalCradle variant="amber" floatDelay={0.5}>
           <div className="p-6 sm:p-7 rounded-[36px] bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.06),0_0_30px_rgba(255,255,255,0.9)_inset] flex flex-col justify-between">
             <div>
@@ -367,7 +377,7 @@ export default function AnalyticsViewport({
         </BotanicalCradle>
       </div>
 
-      {/* 4. Bottom Allocation Grid */}
+      {/* 4. Category Capital Allocation Progress Matrix */}
       <div className="p-6 sm:p-8 rounded-[36px] bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.04)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-stone-100 gap-2">
           <div>
@@ -377,24 +387,40 @@ export default function AnalyticsViewport({
           <span className="text-xs font-mono text-stone-400">{stats.sortedCategories.length} Active Vectors</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
           {stats.sortedCategories.length > 0 ? (
             stats.sortedCategories.map((cat) => {
-              const Icon = CATEGORY_ICONS[cat.id] || Briefcase;
+              const Icon = CATEGORY_ICON_MAP[cat.id] || Briefcase;
               return (
-                <div key={cat.id} className="p-4 rounded-2xl bg-stone-50/80 border border-stone-200/70 flex items-center justify-between shadow-2xs hover:bg-white hover:border-orange-500/30 transition-all">
-                  <div className="flex items-center gap-3 truncate">
-                    <div className="w-9 h-9 rounded-xl bg-white border border-stone-200 text-stone-700 flex items-center justify-center shrink-0 shadow-xs">
-                      <Icon className="w-4 h-4 text-orange-600" />
+                <div key={cat.id} className="p-4 rounded-2xl bg-stone-50/80 border border-stone-200/70 space-y-2.5 shadow-2xs hover:bg-white hover:border-orange-500/30 transition-all">
+                  <div className="flex items-center justify-between truncate">
+                    <div className="flex items-center gap-2.5 truncate">
+                      <div 
+                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs"
+                        style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="truncate">
+                        <p className="text-xs font-mono font-bold text-zinc-900 truncate">{cat.label}</p>
+                        <p className="text-[10px] font-mono text-stone-400">{cat.percentage}% of drain</p>
+                      </div>
                     </div>
-                    <div className="truncate">
-                      <p className="text-xs font-mono font-bold capitalize text-zinc-900 truncate">{cat.id}</p>
-                      <p className="text-[10px] font-mono text-stone-400">{cat.percentage}% of drain</p>
-                    </div>
+                    <span className="text-xs font-mono font-black text-zinc-950 shrink-0">
+                      {formatCurrency(cat.amount, currentCurrency)}
+                    </span>
                   </div>
-                  <span className="text-xs font-mono font-black text-zinc-950 shrink-0">
-                    {formatCurrency(cat.amount, currentCurrency)}
-                  </span>
+
+                  {/* Horizontal visual allocation meter */}
+                  <div className="w-full h-1.5 rounded-full bg-stone-200/80 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${cat.percentage}%` }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                  </div>
                 </div>
               );
             })
@@ -405,6 +431,7 @@ export default function AnalyticsViewport({
           )}
         </div>
       </div>
+
     </div>
   );
 }
