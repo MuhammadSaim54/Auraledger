@@ -15,13 +15,7 @@ import {
   Check,
   X,
   Zap,
-  Cpu,
-  Layers,
-  Terminal,
-  Activity,
-  Globe,
-  Radio,
-  ExternalLink
+  Radio
 } from "lucide-react";
 
 export default function LandingHero({ onOpenAuth }) {
@@ -29,6 +23,7 @@ export default function LandingHero({ onOpenAuth }) {
 
   // Live Interactive Capital State
   const [balance, setBalance] = useState(248500);
+  const [isSimulating, setIsSimulating] = useState(false);
   const [transactions, setTransactions] = useState([
     { id: 1, title: "AWS Compute Cluster H100", cat: "Infrastructure", amount: -482.50, type: "outflow", vault: "Operating" },
     { id: 2, title: "Stripe Enterprise Settlement", cat: "Treasury Inflow", amount: +14250.00, type: "inflow", vault: "Primary" },
@@ -63,11 +58,15 @@ export default function LandingHero({ onOpenAuth }) {
     mouseY.set(0);
   };
 
+  // Button click triggers dynamic animation and opens Sign In modal after smooth feedback
   const handleSimulateInflow = () => {
+    setIsSimulating(true);
+
     const samples = [
       { title: "Client Sovereign Retainer", cat: "Retainer", amount: +8500.00, type: "inflow", vault: "Primary" },
       { title: "Supabase Cloud Enterprise", cat: "Database", amount: -120.00, type: "outflow", vault: "Operating" },
-      { title: "Figma Organization Seat", cat: "Tooling", amount: -45.00, type: "outflow", vault: "Lab" }
+      { title: "Figma Organization Seat", cat: "Tooling", amount: -45.00, type: "outflow", vault: "Lab" },
+      { title: "Angel Venture Tranche #2", cat: "Treasury", amount: +18000.00, type: "inflow", vault: "Primary" }
     ];
     const picked = samples[Math.floor(Math.random() * samples.length)];
     const newTx = {
@@ -80,6 +79,13 @@ export default function LandingHero({ onOpenAuth }) {
     };
     setTransactions((prev) => [newTx, ...prev.slice(0, 2)]);
     setBalance((prev) => prev + picked.amount);
+
+    setTimeout(() => {
+      setIsSimulating(false);
+      if (onOpenAuth) {
+        onOpenAuth("signin");
+      }
+    }, 350);
   };
 
   return (
@@ -87,35 +93,32 @@ export default function LandingHero({ onOpenAuth }) {
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="min-h-screen w-full bg-[#fbf9f5] text-zinc-950 flex flex-col justify-between relative overflow-x-hidden select-none font-sans"
+      className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#fbf9f5] text-zinc-950 flex flex-col justify-between relative select-none font-sans"
     >
       {/* 1. ARCHITECTURAL LIVING AURA LIGHT */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Soft Terracotta Solar Flare */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden max-w-[100vw]">
         <motion.div
           animate={{
             scale: [1, 1.22, 1],
-            x: [0, 40, 0],
-            y: [0, -30, 0],
-            opacity: [0.32, 0.5, 0.32]
+            x: [0, 30, 0],
+            y: [0, -20, 0],
+            opacity: [0.3, 0.48, 0.3]
           }}
           transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-40 right-[8%] w-[850px] h-[850px] bg-gradient-to-bl from-orange-400/30 via-amber-200/20 to-transparent rounded-full blur-[140px]"
+          className="absolute -top-40 right-[-10%] sm:right-[8%] w-[500px] sm:w-[850px] h-[500px] sm:h-[850px] bg-gradient-to-bl from-orange-400/30 via-amber-200/20 to-transparent rounded-full blur-[100px] sm:blur-[140px]"
         />
 
-        {/* Bioluminescent Emerald Breath */}
         <motion.div
           animate={{
             scale: [1.12, 0.95, 1.12],
-            x: [0, -40, 0],
-            y: [0, 35, 0],
-            opacity: [0.22, 0.4, 0.22]
+            x: [0, -30, 0],
+            y: [0, 25, 0],
+            opacity: [0.2, 0.38, 0.2]
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[28%] -left-40 w-[780px] h-[780px] bg-gradient-to-tr from-emerald-400/25 via-teal-200/15 to-transparent rounded-full blur-[140px]"
+          className="absolute top-[28%] left-[-15%] sm:-left-40 w-[450px] sm:w-[780px] h-[450px] sm:h-[780px] bg-gradient-to-tr from-emerald-400/25 via-teal-200/15 to-transparent rounded-full blur-[100px] sm:blur-[140px]"
         />
 
-        {/* Precision Sub-Pixel Architectural Grid */}
         <div
           className="absolute inset-0 opacity-[0.026]"
           style={{
@@ -125,39 +128,39 @@ export default function LandingHero({ onOpenAuth }) {
         />
       </div>
 
-      {/* 2. CHASSIS MINIMALIST NAVBAR (Level-Up Luxury Porcelain Pill) */}
-      <header className="sticky top-0 z-50 w-full pt-4 px-3 sm:px-8 max-w-[1450px] mx-auto transition-all">
+      {/* 2. CHASSIS MINIMALIST NAVBAR */}
+      <header className="sticky top-0 z-50 w-full pt-3 sm:pt-4 px-3 sm:px-8 max-w-[1450px] mx-auto transition-all">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex items-center justify-between gap-3 py-2.5 px-4 sm:px-7 rounded-full bg-white/80 backdrop-blur-2xl border border-stone-200/80 shadow-[0_12px_36px_-10px_rgba(0,0,0,0.06),0_1px_1.5px_rgba(255,255,255,1)_inset] hover:border-stone-300/80 transition-all group"
+          className="flex items-center justify-between gap-2 sm:gap-3 py-2 sm:py-2.5 px-3.5 sm:px-7 rounded-full bg-white/80 backdrop-blur-2xl border border-stone-200/80 shadow-[0_12px_36px_-10px_rgba(0,0,0,0.06),0_1px_1.5px_rgba(255,255,255,1)_inset] hover:border-stone-300/80 transition-all"
         >
-          {/* Logo Mark with Caustic Halo */}
-          <div className="flex items-center gap-3 shrink-0 cursor-pointer">
+          {/* Logo Mark */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 cursor-pointer">
             <motion.div 
               whileHover={{ rotate: 12, scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              className="relative w-9 h-9 rounded-2xl bg-gradient-to-b from-[#2a1308] to-[#120703] p-[1px] shadow-sm shadow-orange-950/20"
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-b from-[#2a1308] to-[#120703] p-[1px] shadow-sm shadow-orange-950/20"
             >
               <div className="w-full h-full rounded-[15px] bg-[#170b05] flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-tr from-orange-600/40 via-transparent to-amber-400/20" />
-                <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-orange-500 relative z-10" fill="none">
+                <svg viewBox="0 0 24 24" className="w-4 sm:w-4.5 h-4 sm:h-4.5 text-orange-500 relative z-10" fill="none">
                   <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
                   <path d="M12 3V12M12 12L20 7.5M12 12L4 7.5M12 12V21" stroke="#fdba74" strokeWidth="1.2" strokeLinecap="round" />
                 </svg>
               </div>
             </motion.div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-sm font-bold tracking-tight text-zinc-950 leading-none">AuraLedger</h1>
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                <h1 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-950 leading-none">AuraLedger</h1>
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
               </div>
-              <p className="text-[9px] font-mono tracking-widest text-zinc-400 uppercase mt-0.5">Tactile FinOS</p>
+              <p className="text-[8px] sm:text-[9px] font-mono tracking-widest text-zinc-400 uppercase mt-0.5">Tactile FinOS</p>
             </div>
           </div>
 
-          {/* Center Micro-Status Pill (Subtle & Sleek) */}
+          {/* Center Micro-Status Pill */}
           <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100/70 border border-stone-200/60 text-[11px] font-mono text-stone-600 shadow-2xs hover:bg-stone-100 transition-colors">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
             <span>Telemetry: <strong className="text-zinc-900 font-semibold">0ms Local Sandbox</strong></span>
@@ -166,11 +169,11 @@ export default function LandingHero({ onOpenAuth }) {
           </div>
 
           {/* Action Deck */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <button
               type="button"
               onClick={() => onOpenAuth("signin")}
-              className="px-4 py-2 rounded-full text-xs font-mono font-bold text-zinc-700 hover:text-zinc-950 hover:bg-stone-100/60 transition-all cursor-pointer"
+              className="px-2.5 sm:px-4 py-1.5 rounded-full text-xs font-mono font-bold text-zinc-700 hover:text-zinc-950 hover:bg-stone-100/60 transition-all cursor-pointer"
             >
               Sign In
             </button>
@@ -180,35 +183,35 @@ export default function LandingHero({ onOpenAuth }) {
               whileTap={{ scale: 0.96 }}
               type="button"
               onClick={() => onOpenAuth("signup")}
-              className="relative px-5 py-2 rounded-full bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-mono font-bold shadow-md shadow-zinc-950/20 flex items-center gap-2 transition-all cursor-pointer overflow-hidden group"
+              className="relative px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-zinc-950 hover:bg-zinc-900 text-white text-[11px] sm:text-xs font-mono font-bold shadow-md shadow-zinc-950/20 flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer overflow-hidden group"
             >
-              {/* Traveling Shimmer Line */}
               <motion.div
                 animate={{ x: ["-100%", "200%"] }}
                 transition={{ duration: 2.8, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
               />
-              <span className="relative z-10">Launch Terminal</span>
-              <ArrowRight className="w-3.5 h-3.5 text-orange-400 group-hover:translate-x-0.5 transition-transform relative z-10" />
+              <span className="relative z-10 hidden sm:inline">Launch Terminal</span>
+              <span className="relative z-10 sm:hidden">Launch</span>
+              <ArrowRight className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-orange-400 group-hover:translate-x-0.5 transition-transform relative z-10" />
             </motion.button>
           </div>
         </motion.div>
       </header>
 
       {/* 3. HERO STAGE */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16 pb-20">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-8 sm:pt-16 pb-20 w-full overflow-hidden">
         
         <div className="text-center flex flex-col items-center max-w-4xl mx-auto">
           {/* Luminous Tag */}
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-2xs text-[11px] font-mono mb-5 text-stone-600"
+            className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-2xs text-[10px] sm:text-[11px] font-mono mb-5 text-stone-600 max-w-full"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Autonomous Capital Operating System</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <span className="truncate">Autonomous Capital Operating System</span>
             <span className="text-stone-300">•</span>
-            <span className="text-orange-600 font-bold flex items-center gap-1">
+            <span className="text-orange-600 font-bold flex items-center gap-1 shrink-0">
               Phase 5 Sovereign <ChevronRight className="w-3 h-3" />
             </span>
           </motion.div>
@@ -218,7 +221,7 @@ export default function LandingHero({ onOpenAuth }) {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-[-0.04em] text-zinc-950 leading-[1.05] max-w-4xl"
+            className="text-3xl sm:text-6xl md:text-7xl font-extrabold tracking-[-0.04em] text-zinc-950 leading-[1.06] max-w-4xl px-1"
           >
             Every Single Dollar Tracked. <br />
             <span className="bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] bg-clip-text text-transparent">
@@ -230,7 +233,7 @@ export default function LandingHero({ onOpenAuth }) {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mt-5 text-sm sm:text-lg text-stone-500 max-w-2xl font-normal leading-relaxed tracking-tight"
+            className="mt-4 sm:mt-5 text-xs sm:text-base md:text-lg text-stone-500 max-w-2xl font-normal leading-relaxed tracking-tight px-2"
           >
             Stop wrestling with clumsy Excel sheets and broken bank connections. AuraLedger delivers tactile financial certainty with real-time daily burn velocity, automated multi-vault partitions, and local encrypted custody.
           </motion.p>
@@ -240,12 +243,12 @@ export default function LandingHero({ onOpenAuth }) {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto"
+            className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto px-2"
           >
             <button
               type="button"
               onClick={() => onOpenAuth("signup")}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] hover:brightness-105 text-white font-mono font-bold text-xs tracking-wider flex items-center justify-center gap-2.5 shadow-lg shadow-orange-600/30 active:scale-95 transition-all cursor-pointer relative overflow-hidden group"
+              className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] hover:brightness-105 text-white font-mono font-bold text-xs tracking-wider flex items-center justify-center gap-2.5 shadow-lg shadow-orange-600/30 active:scale-95 transition-all cursor-pointer relative overflow-hidden group"
             >
               <motion.div
                 animate={{ x: ["-100%", "200%"] }}
@@ -257,19 +260,26 @@ export default function LandingHero({ onOpenAuth }) {
               <ArrowRight className="w-4 h-4 text-orange-200 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            <button
+            {/* Interactive Simulate Button with Direct Feedback */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.94 }}
+              animate={isSimulating ? { scale: [1, 1.06, 0.98, 1], borderColor: "#ea580c" } : {}}
+              transition={{ duration: 0.3 }}
               type="button"
               onClick={handleSimulateInflow}
-              className="w-full sm:w-auto px-7 py-4 rounded-full bg-white hover:bg-stone-50 border border-stone-200/90 text-zinc-900 font-mono font-semibold text-xs tracking-wide shadow-2xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+              className={`w-full sm:w-auto px-7 py-3.5 sm:py-4 rounded-full bg-white hover:bg-stone-50 border text-zinc-950 font-mono font-semibold text-xs tracking-wide shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                isSimulating ? "border-orange-500 bg-orange-50/70 shadow-[0_0_20px_rgba(234,88,12,0.25)]" : "border-stone-200/90"
+              }`}
             >
-              <Zap className="w-3.5 h-3.5 text-orange-500 group-hover:scale-125 transition-transform" />
-              <span>SIMULATE LIVE INGESTION</span>
-            </button>
+              <Zap className={`w-3.5 h-3.5 text-orange-500 transition-transform ${isSimulating ? "scale-140 rotate-12 text-orange-600" : ""}`} />
+              <span>{isSimulating ? "INITIALIZING SANDBOX..." : "SIMULATE LIVE INGESTION"}</span>
+            </motion.button>
           </motion.div>
         </div>
 
         {/* 4. THE $20,000 ARCHITECTURAL BOTANICAL CRADLE TELEMETRY CHASSIS */}
-        <div className="relative mt-16 sm:mt-24 max-w-5xl mx-auto isolate select-none [perspective:1400px]">
+        <div className="relative mt-14 sm:mt-24 max-w-5xl mx-auto isolate select-none [perspective:1400px]">
           
           {/* Top-Left Sculptural Emerald Leaf */}
           <motion.div
@@ -279,7 +289,7 @@ export default function LandingHero({ onOpenAuth }) {
               rotate: [-20, -26, -20]
             }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-10 -left-6 sm:-left-10 w-28 sm:w-36 h-36 sm:h-48 pointer-events-none -z-10 filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.08)]"
+            className="hidden sm:block absolute -top-10 -left-6 sm:-left-10 w-28 sm:w-36 h-36 sm:h-48 pointer-events-none -z-10 filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.08)]"
           >
             <svg viewBox="0 0 100 130" fill="none" className="w-full h-full">
               <defs>
@@ -312,7 +322,7 @@ export default function LandingHero({ onOpenAuth }) {
               rotate: [15, 20, 15]
             }}
             transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-            className="absolute -bottom-10 -right-6 sm:-right-8 w-32 sm:w-42 h-38 sm:h-52 pointer-events-none -z-10 filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.1)]"
+            className="hidden sm:block absolute -bottom-10 -right-6 sm:-right-8 w-32 sm:w-42 h-38 sm:h-52 pointer-events-none -z-10 filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.1)]"
           >
             <svg viewBox="0 0 120 150" fill="none" className="w-full h-full">
               <defs>
@@ -336,13 +346,13 @@ export default function LandingHero({ onOpenAuth }) {
           {/* Main Levitating Monolith Chassis */}
           <motion.div
             style={{
-              rotateX: cardRotateX,
-              rotateY: cardRotateY,
+              rotateX: typeof window !== "undefined" && window.innerWidth > 1024 ? cardRotateX : 0,
+              rotateY: typeof window !== "undefined" && window.innerWidth > 1024 ? cardRotateY : 0,
               transformStyle: "preserve-3d"
             }}
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            className="relative rounded-[36px] sm:rounded-[44px] bg-white/95 backdrop-blur-2xl border border-white/95 p-6 sm:p-9 shadow-[0_30px_85px_-20px_rgba(0,0,0,0.08),0_1px_1px_rgba(255,255,255,0.95)_inset] overflow-hidden"
+            className="relative rounded-[28px] sm:rounded-[44px] bg-white/95 backdrop-blur-2xl border border-stone-200/90 sm:border-white/95 p-4 sm:p-9 shadow-[0_30px_85px_-20px_rgba(0,0,0,0.08),0_1px_1px_rgba(255,255,255,0.95)_inset] overflow-hidden"
           >
             {/* Running Caustic Prism Line */}
             <div className="absolute inset-0 rounded-[inherit] pointer-events-none overflow-hidden p-[1px]">
@@ -354,64 +364,70 @@ export default function LandingHero({ onOpenAuth }) {
             </div>
 
             {/* Header Telemetry Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 border-b border-stone-100 gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 sm:pb-4 mb-4 sm:mb-5 border-b border-stone-100 gap-2 sm:gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-rose-400" />
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-400" />
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400" />
                 </div>
-                <span className="text-xs font-mono text-stone-400 ml-1">
+                <span className="text-[10px] sm:text-xs font-mono text-stone-400 ml-1 truncate">
                   auraledger.engine • Kinetic Multi-Vault Telemetry
                 </span>
               </div>
 
-              <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70 flex items-center gap-1.5 shadow-2xs">
-                <ShieldCheck className="w-3.5 h-3.5" /> 100% Retained Runway
+              <span className="self-start sm:self-auto px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70 flex items-center gap-1.5 shadow-2xs">
+                <ShieldCheck className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> 100% Retained Runway
               </span>
             </div>
 
             {/* Three Monolith Slabs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-5">
-              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
-                <span className="text-[10px] font-mono uppercase text-stone-400 block">Total Liquidity</span>
-                <h4 className="text-2xl font-mono font-black text-zinc-950 mt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
+                <span className="text-[9px] sm:text-[10px] font-mono uppercase text-stone-400 block">Total Liquidity</span>
+                <motion.h4 
+                  key={balance}
+                  initial={{ scale: 0.96, color: "#ea580c" }}
+                  animate={{ scale: 1, color: "#09090b" }}
+                  transition={{ duration: 0.2 }}
+                  className="text-xl sm:text-2xl font-mono font-black mt-1"
+                >
                   ${balance.toLocaleString()}.00
-                </h4>
-                <p className="text-[10px] font-mono text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                </motion.h4>
+                <p className="text-[9px] sm:text-[10px] font-mono text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" /> +18.4% this cycle
                 </p>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
-                <span className="text-[10px] font-mono uppercase text-stone-400 block">Safe Daily Pace</span>
-                <h4 className="text-2xl font-mono font-black text-zinc-950 mt-1">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
+                <span className="text-[9px] sm:text-[10px] font-mono uppercase text-stone-400 block">Safe Daily Pace</span>
+                <h4 className="text-xl sm:text-2xl font-mono font-black text-zinc-950 mt-1">
                   $214.50<span className="text-xs font-normal text-stone-400">/day</span>
                 </h4>
-                <p className="text-[10px] font-mono text-orange-600 font-bold mt-1.5 flex items-center gap-1">
+                <p className="text-[9px] sm:text-[10px] font-mono text-orange-600 font-bold mt-1.5 flex items-center gap-1">
                   <Flame className="w-3 h-3" /> 52.5 Mo Horizon
                 </p>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
-                <span className="text-[10px] font-mono uppercase text-stone-400 block">Reserve Fund</span>
-                <h4 className="text-2xl font-mono font-black text-zinc-950 mt-1">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
+                <span className="text-[9px] sm:text-[10px] font-mono uppercase text-stone-400 block">Reserve Fund</span>
+                <h4 className="text-xl sm:text-2xl font-mono font-black text-zinc-950 mt-1">
                   30% Protected
                 </h4>
-                <p className="text-[10px] font-mono text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                <p className="text-[9px] sm:text-[10px] font-mono text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
                   <Lock className="w-3 h-3" /> Jan 2031 Depletion
                 </p>
               </div>
             </div>
 
             {/* Live Interactive Ingest Feed */}
-            <div className="mt-5 p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-2xs">
-              <div className="flex items-center justify-between text-xs font-mono text-stone-400 pb-2.5 border-b border-stone-100 mb-2.5">
+            <div className="mt-4 sm:mt-5 p-3.5 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-2xs">
+              <div className="flex items-center justify-between text-[10px] sm:text-xs font-mono text-stone-400 pb-2.5 border-b border-stone-100 mb-2.5">
                 <span>RECENT REAL-TIME INGEST STREAM</span>
                 <button
                   type="button"
                   onClick={handleSimulateInflow}
-                  className="text-orange-600 hover:text-orange-700 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                  className="text-orange-600 hover:text-orange-700 font-bold flex items-center gap-1 cursor-pointer transition-colors active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" /> Push Mock Tx
                 </button>
@@ -429,21 +445,21 @@ export default function LandingHero({ onOpenAuth }) {
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="py-2.5 flex items-center justify-between gap-3"
+                        className="py-2.5 flex items-center justify-between gap-2 sm:gap-3"
                       >
-                        <div className="flex items-center gap-2.5 truncate">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border ${
+                        <div className="flex items-center gap-2 sm:gap-2.5 truncate">
+                          <div className={`w-6 sm:w-7 h-6 sm:h-7 rounded-lg flex items-center justify-center shrink-0 border ${
                             isInflow ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"
                           }`}>
                             {isInflow ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
                           </div>
                           <div className="truncate">
-                            <p className="font-bold text-zinc-900 truncate">{tx.title}</p>
-                            <span className="text-[9px] text-stone-400">#{tx.cat.toLowerCase()} • {tx.vault}</span>
+                            <p className="font-bold text-zinc-900 truncate text-[11px] sm:text-xs">{tx.title}</p>
+                            <span className="text-[8px] sm:text-[9px] text-stone-400">#{tx.cat.toLowerCase()} • {tx.vault}</span>
                           </div>
                         </div>
 
-                        <span className={`font-black shrink-0 ${isInflow ? "text-emerald-600" : "text-zinc-950"}`}>
+                        <span className={`font-black shrink-0 text-xs sm:text-sm ${isInflow ? "text-emerald-600" : "text-zinc-950"}`}>
                           {isInflow ? "+" : "-"}${Math.abs(tx.amount).toFixed(2)}
                         </span>
                       </motion.div>
@@ -455,13 +471,13 @@ export default function LandingHero({ onOpenAuth }) {
           </motion.div>
         </div>
 
-        {/* 5. COMPARISON MATRIX (Ceramic Alabaster Slabs) */}
-        <div className="mt-20 sm:mt-28">
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-orange-600 font-bold">
+        {/* 5. COMPARISON MATRIX */}
+        <div className="mt-16 sm:mt-28">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-14">
+            <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-orange-600 font-bold">
               The Architecture Shift
             </span>
-            <p className="text-2xl sm:text-4xl font-extrabold text-zinc-950 mt-1.5 tracking-[-0.03em]">
+            <p className="text-xl sm:text-4xl font-extrabold text-zinc-950 mt-1.5 tracking-[-0.03em]">
               Why High-Growth Builders Abandon Spreadsheets
             </p>
             <p className="text-xs sm:text-sm text-stone-500 mt-2 px-2 font-normal leading-relaxed">
@@ -469,19 +485,19 @@ export default function LandingHero({ onOpenAuth }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-7">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-7">
             {/* Traditional Card */}
-            <div className="p-7 sm:p-9 rounded-[32px] bg-white/80 backdrop-blur-xl border border-rose-200/60 shadow-[0_15px_40px_-15px_rgba(244,63,94,0.06)] space-y-4">
+            <div className="p-6 sm:p-9 rounded-[28px] sm:rounded-[32px] bg-white/80 backdrop-blur-xl border border-rose-200/60 shadow-[0_15px_40px_-15px_rgba(244,63,94,0.06)] space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-stone-100">
-                <span className="text-[11px] font-mono text-rose-600 font-bold uppercase tracking-wider">
+                <span className="text-[10px] sm:text-[11px] font-mono text-rose-600 font-bold uppercase tracking-wider">
                   Traditional Spreadsheets & Trackers
                 </span>
                 <span className="w-2 h-2 rounded-full bg-rose-400" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-950">
+              <h3 className="text-base sm:text-xl font-bold tracking-tight text-zinc-950">
                 Fragile, Leaky & Tedious
               </h3>
-              <ul className="space-y-3.5 text-xs sm:text-sm text-stone-600">
+              <ul className="space-y-3 sm:space-y-3.5 text-xs sm:text-sm text-stone-600">
                 <li className="flex items-start gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
                     <X className="w-3 h-3 stroke-[3]" />
@@ -504,17 +520,17 @@ export default function LandingHero({ onOpenAuth }) {
             </div>
 
             {/* AuraLedger Card */}
-            <div className="p-7 sm:p-9 rounded-[32px] bg-white/90 backdrop-blur-xl border border-emerald-300/60 shadow-[0_20px_50px_-15px_rgba(16,185,129,0.1)] space-y-4">
+            <div className="p-6 sm:p-9 rounded-[28px] sm:rounded-[32px] bg-white/90 backdrop-blur-xl border border-emerald-300/60 shadow-[0_20px_50px_-15px_rgba(16,185,129,0.1)] space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-stone-100">
-                <span className="text-[11px] font-mono text-emerald-700 font-bold uppercase tracking-wider">
+                <span className="text-[10px] sm:text-[11px] font-mono text-emerald-700 font-bold uppercase tracking-wider">
                   The AuraLedger Standard
                 </span>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-950">
+              <h3 className="text-base sm:text-xl font-bold tracking-tight text-zinc-950">
                 Tactile, Deterministic & Sovereign
               </h3>
-              <ul className="space-y-3.5 text-xs sm:text-sm text-stone-600">
+              <ul className="space-y-3 sm:space-y-3.5 text-xs sm:text-sm text-stone-600">
                 <li className="flex items-start gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
                     <Check className="w-3 h-3 stroke-[3]" />
@@ -539,19 +555,19 @@ export default function LandingHero({ onOpenAuth }) {
         </div>
 
         {/* 6. CLEAN CTA MONOLITH */}
-        <div className="mt-20 sm:mt-28 rounded-[36px] bg-gradient-to-b from-[#180e07] via-[#0f0703] to-[#050201] text-white p-8 sm:p-14 relative overflow-hidden shadow-xl shadow-orange-950/20">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-orange-600/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 max-w-2xl space-y-3">
+        <div className="mt-16 sm:mt-28 rounded-[28px] sm:rounded-[36px] bg-gradient-to-b from-[#180e07] via-[#0f0703] to-[#050201] text-white p-6 sm:p-14 relative overflow-hidden shadow-xl shadow-orange-950/20">
+          <div className="absolute top-0 right-0 w-60 sm:w-80 h-60 sm:h-80 bg-orange-600/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 max-w-2xl space-y-2.5 sm:space-y-3">
             <span className="text-[10px] sm:text-xs font-mono text-orange-400 font-bold uppercase tracking-widest block">
               Instant Provisioning
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black font-mono tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-5xl font-black font-mono tracking-tight leading-tight">
               Ready to Master Your Expense Velocity?
             </h2>
             <p className="text-xs sm:text-base text-stone-300 font-sans leading-relaxed pt-1">
               Zero credit card required. Launch your encrypted, client-side expense tracker in less than 30 seconds.
             </p>
-            <div className="pt-4 flex flex-col sm:flex-row items-center gap-3">
+            <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row items-center gap-3">
               <button
                 type="button"
                 onClick={() => onOpenAuth("signup")}
@@ -573,37 +589,34 @@ export default function LandingHero({ onOpenAuth }) {
 
       </main>
 
-      {/* ========================================================================= */}
-      {/* 7. THE $20,000 ARCHITECTURAL MONOLITH FOOTER (Elevated Luxury Experience) */}
-      {/* ========================================================================= */}
-      <footer className="relative z-10 w-full pt-10 pb-12 px-4 sm:px-8 max-w-[1450px] mx-auto">
+      {/* 7. THE $20,000 ARCHITECTURAL MONOLITH FOOTER */}
+      <footer className="relative z-10 w-full pt-8 sm:pt-10 pb-10 sm:pb-12 px-3 sm:px-8 max-w-[1450px] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="rounded-[40px] bg-white/85 backdrop-blur-2xl border border-stone-200/80 shadow-[0_25px_70px_-20px_rgba(0,0,0,0.06),0_1px_1.5px_rgba(255,255,255,1)_inset] p-8 sm:p-12 overflow-hidden relative"
+          className="rounded-[32px] sm:rounded-[40px] bg-white/85 backdrop-blur-2xl border border-stone-200/80 shadow-[0_25px_70px_-20px_rgba(0,0,0,0.06),0_1px_1.5px_rgba(255,255,255,1)_inset] p-6 sm:p-12 overflow-hidden relative"
         >
-          {/* Subtle Ambient Caustic Light Sweep across Footer Top */}
           <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-orange-400/40 to-transparent pointer-events-none" />
 
-          {/* Top Row: Brand & Architectural Navigation */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-10 sm:gap-12 pb-10 border-b border-stone-100">
+          {/* Top Row: Brand & Links */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 sm:gap-12 pb-8 sm:pb-10 border-b border-stone-100">
             
-            {/* Brand Manifesto Column (Span 2) */}
-            <div className="md:col-span-2 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-2xl bg-zinc-950 text-white flex items-center justify-center p-[1px] shadow-sm shadow-zinc-950/20">
-                  <div className="w-full h-full rounded-[15px] bg-[#140803] flex items-center justify-center border border-orange-500/20">
-                    <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-orange-500" fill="none">
+            {/* Column 1: Brand */}
+            <div className="sm:col-span-2 md:col-span-2 space-y-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-zinc-950 text-white flex items-center justify-center p-[1px] shadow-sm shadow-zinc-950/20">
+                  <div className="w-full h-full rounded-[11px] bg-[#140803] flex items-center justify-center border border-orange-500/20">
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 text-orange-500" fill="none">
                       <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
                       <path d="M12 3V12M12 12L20 7.5M12 12L4 7.5M12 12V21" stroke="#fdba74" strokeWidth="1.2" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tight text-zinc-950 font-mono">AuraLedger</h3>
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400">Autonomous FinOS</p>
+                  <h3 className="text-sm sm:text-base font-bold tracking-tight text-zinc-950 font-mono">AuraLedger</h3>
+                  <p className="text-[9px] font-mono uppercase tracking-widest text-stone-400">Autonomous FinOS</p>
                 </div>
               </div>
 
@@ -611,20 +624,19 @@ export default function LandingHero({ onOpenAuth }) {
                 The high-velocity tactile personal finance operating system. Built for sovereign operators, founders, and creators who demand absolute privacy and zero cloud profiling.
               </p>
 
-              {/* Verified Protocol Badges */}
-              <div className="flex items-center gap-2 pt-1">
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone-100 text-stone-700 border border-stone-200/80 flex items-center gap-1.5 shadow-2xs">
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-stone-100 text-stone-700 border border-stone-200/80 flex items-center gap-1.5 shadow-2xs">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  AES-256 Vault Sandboxing
+                  AES-256 Sandboxing
                 </span>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone-100 text-stone-700 border border-stone-200/80 flex items-center gap-1.5 shadow-2xs">
+                <span className="px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-stone-100 text-stone-700 border border-stone-200/80 flex items-center gap-1.5 shadow-2xs">
                   <Lock className="w-3 h-3 text-orange-600" />
                   Zero Telemetry
                 </span>
               </div>
             </div>
 
-            {/* Column 2: System HUD */}
+            {/* Column 2: Core Modules */}
             <div className="space-y-3">
               <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-950">
                 Core Modules
@@ -640,9 +652,9 @@ export default function LandingHero({ onOpenAuth }) {
                     <button
                       type="button"
                       onClick={item.action}
-                      className="hover:text-zinc-950 hover:translate-x-1 flex items-center gap-1.5 transition-all cursor-pointer group"
+                      className="hover:text-zinc-950 hover:translate-x-1 flex items-center gap-1.5 transition-all cursor-pointer"
                     >
-                      <span className="w-1 h-1 rounded-full bg-stone-300 group-hover:bg-orange-500 transition-colors" />
+                      <span className="w-1 h-1 rounded-full bg-stone-300" />
                       <span>{item.label}</span>
                     </button>
                   </li>
@@ -650,7 +662,7 @@ export default function LandingHero({ onOpenAuth }) {
               </ul>
             </div>
 
-            {/* Column 3: Architecture Protocol */}
+            {/* Column 3: Architecture */}
             <div className="space-y-3">
               <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-950">
                 Architecture
@@ -666,9 +678,9 @@ export default function LandingHero({ onOpenAuth }) {
                     <button
                       type="button"
                       onClick={item.action}
-                      className="hover:text-zinc-950 hover:translate-x-1 flex items-center gap-1.5 transition-all cursor-pointer group"
+                      className="hover:text-zinc-950 hover:translate-x-1 flex items-center gap-1.5 transition-all cursor-pointer"
                     >
-                      <span className="w-1 h-1 rounded-full bg-stone-300 group-hover:bg-emerald-500 transition-colors" />
+                      <span className="w-1 h-1 rounded-full bg-stone-300" />
                       <span>{item.label}</span>
                     </button>
                   </li>
@@ -676,7 +688,7 @@ export default function LandingHero({ onOpenAuth }) {
               </ul>
             </div>
 
-            {/* Column 4: Engine Diagnostics */}
+            {/* Column 4: Telemetry */}
             <div className="space-y-3">
               <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-950">
                 Telemetry
@@ -702,17 +714,16 @@ export default function LandingHero({ onOpenAuth }) {
 
           </div>
 
-          {/* Bottom Row: Legal, Sovereignty & High-Tech Status Pill */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-stone-400">
+          {/* Bottom Row */}
+          <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-stone-400">
             <div className="flex items-center gap-2">
               <span>© 2026 AuraLedger OS.</span>
               <span className="text-stone-300">•</span>
               <span>All rights reserved.</span>
             </div>
 
-            {/* High-Contrast Luxury Telemetry Pill */}
             <div className="flex items-center gap-3">
-              <span className="px-3 py-1 rounded-full bg-stone-100/90 border border-stone-200/80 text-stone-600 flex items-center gap-1.5 text-[11px] font-semibold">
+              <span className="px-3 py-1 rounded-full bg-stone-100/90 border border-stone-200/80 text-stone-600 flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold">
                 <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
                 <span>Deterministic Engine Active</span>
               </span>
