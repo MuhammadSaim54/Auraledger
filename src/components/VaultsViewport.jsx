@@ -1,359 +1,430 @@
 import React, { useState, useMemo } from "react";
-import { motion } from "framer-motion";
-import { 
-  Building2, 
-  ShieldCheck, 
-  Sparkles, 
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Vault,
   ArrowRightLeft,
-  SlidersHorizontal,
+  ShieldCheck,
+  TrendingUp,
+  Lock,
+  Sparkles,
   CheckCircle2,
-  AlertTriangle
+  AlertCircle
 } from "lucide-react";
-import { formatCurrency } from "../utils/formatters";
-import VaultTransferModal from "./VaultTransferModal";
-import AutoRebalanceModal from "./AutoRebalanceModal";
+import { formatCurrency, formatDate } from "../utils/formatters";
 import BotanicalCradle from "./BotanicalCradle";
 
-const VAULT_CONFIGS = [
+const VAULT_METAS = [
   {
     id: "primary",
-    label: "Primary Operating Vault",
-    tag: "High Liquidity",
-    description: "Daily operational cashflow, cloud compute, and immediate liquidity obligations.",
-    icon: Building2,
-    targetShare: 50,
-    badgeColor: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-    barColor: "bg-orange-600",
-    variant: "amber",
-    floatDelay: 0
+    name: "Primary Operating",
+    description: "Daily active operational expenditures & burn liquidity",
+    targetRatio: 50,
+    color: "#ea580c",
+    bgTint: "bg-orange-500/10",
+    borderTint: "border-orange-500/30",
+    textTint: "text-orange-700",
+    icon: Vault
   },
   {
     id: "reserve",
-    label: "Emergency Reserve",
-    tag: "Protected Buffer",
-    description: "Multi-quarter runway preservation lock. Strict minimum drawdown threshold enforced.",
-    icon: ShieldCheck,
-    targetShare: 30,
-    badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-    barColor: "bg-emerald-600",
-    variant: "emerald",
-    floatDelay: 0.3
+    name: "Tax & Runway Reserve",
+    description: "Cold-storage emergency runway & protected liability vault",
+    targetRatio: 30,
+    color: "#059669",
+    bgTint: "bg-emerald-500/10",
+    borderTint: "border-emerald-500/30",
+    textTint: "text-emerald-700",
+    icon: Lock
   },
   {
     id: "growth",
-    label: "Growth & Lab Capital",
-    tag: "Yield & Venture",
-    description: "High-conviction R&D initiatives, hardware expansions, and seed-stage lab deployments.",
-    icon: Sparkles,
-    targetShare: 20,
-    badgeColor: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    barColor: "bg-amber-600",
-    variant: "amber",
-    floatDelay: 0.6
+    name: "Growth & R&D Capital",
+    description: "Discretionary tactical ventures, compute cluster & tools",
+    targetRatio: 20,
+    color: "#d97706",
+    bgTint: "bg-amber-500/10",
+    borderTint: "border-amber-500/30",
+    textTint: "text-amber-700",
+    icon: TrendingUp
   }
 ];
 
 export default function VaultsViewport({
-  vaultBalances = {},
+  vaultBalances = { primary: 0, reserve: 0, growth: 0 },
   totalLiquidity = 0,
   onExecuteTransfer,
   transferHistory = [],
   currentCurrency = "USD"
 }) {
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-  const [isRebalanceModalOpen, setIsRebalanceModalOpen] = useState(false);
+  const [sourceVault, setSourceVault] = useState("primary");
+  const [targetVault, setTargetVault] = useState("reserve");
+  const [transferAmount, setTransferAmount] = useState("");
+  const [transferNote, setTransferNote] = useState("");
+  const [feedback, setFeedback] = useState(null);
 
-  // Calculate Equilibrium Proposals
-  const { proposals, maxVariance, isEquilibriumNeeded } = useMemo(() => {
-    if (totalLiquidity <= 0) {
-      return { proposals: [], maxVariance: 0, isEquilibriumNeeded: false };
-    }
+  const showFeedback = (type, msg) => {
+    setFeedback({ type, msg });
+    setTimeout(() => setFeedback(null), 3000);
+  };
 
-    const primaryBal = vaultBalances.primary || 0;
-    const reserveBal = vaultBalances.reserve || 0;
-    const growthBal = vaultBalances.growth || 0;
+  const vaultStats = useMemo(() => {
+    return VAULT_METAS.map((v) => {
+      const balance = Number(vaultBalances[v.id]) || 0;
+      const actualRatio = totalLiquidity > 0 ? (balance / totalLiquidity) * 100 : 0;
+      const targetBalance = totalLiquidity * (v.targetRatio / 100);
+      const delta = balance - targetBalance;
 
-    const targetPrimary = Math.round(totalLiquidity * 0.5);
-    const targetReserve = Math.round(totalLiquidity * 0.3);
-    const targetGrowth = Math.round(totalLiquidity * 0.2);
-
-    const deltaPrimary = primaryBal - targetPrimary; // positive = surplus, negative = deficit
-    const deltaReserve = reserveBal - targetReserve;
-    const deltaGrowth = growthBal - targetGrowth;
-
-    const sharePrimary = Math.round((primaryBal / totalLiquidity) * 100);
-    const shareReserve = Math.round((reserveBal / totalLiquidity) * 100);
-    const shareGrowth = Math.round((growthBal / totalLiquidity) * 100);
-
-    const v1 = Math.abs(sharePrimary - 50);
-    const v2 = Math.abs(shareReserve - 30);
-    const v3 = Math.abs(shareGrowth - 20);
-    const highestVariance = Math.max(v1, v2, v3);
-
-    const calculatedProposals = [];
-
-    // Simple auto-balancer: surplus vaults fund deficit vaults
-    const surpluses = [];
-    const deficits = [];
-
-    if (deltaPrimary > 0) surpluses.push({ id: "primary", amount: deltaPrimary });
-    else if (deltaPrimary < 0) deficits.push({ id: "primary", amount: Math.abs(deltaPrimary) });
-
-    if (deltaReserve > 0) surpluses.push({ id: "reserve", amount: deltaReserve });
-    else if (deltaReserve < 0) deficits.push({ id: "reserve", amount: Math.abs(deltaReserve) });
-
-    if (deltaGrowth > 0) surpluses.push({ id: "growth", amount: deltaGrowth });
-    else if (deltaGrowth < 0) deficits.push({ id: "growth", amount: Math.abs(deltaGrowth) });
-
-    surpluses.forEach((surp) => {
-      deficits.forEach((def) => {
-        if (surp.amount > 0 && def.amount > 0) {
-          const shift = Math.min(surp.amount, def.amount);
-          calculatedProposals.push({
-            from: surp.id,
-            to: def.id,
-            amount: shift
-          });
-          surp.amount -= shift;
-          def.amount -= shift;
-        }
-      });
+      return {
+        ...v,
+        balance,
+        actualRatio,
+        targetBalance,
+        delta
+      };
     });
-
-    return {
-      proposals: calculatedProposals,
-      maxVariance: highestVariance,
-      isEquilibriumNeeded: highestVariance >= 4 // triggers banner if variance >= 4%
-    };
   }, [vaultBalances, totalLiquidity]);
 
-  const handleApplyBatchRebalance = (rebalanceProposals) => {
-    rebalanceProposals.forEach((p) => {
+  const handleTransferSubmit = (e) => {
+    e.preventDefault();
+    const amt = parseFloat(transferAmount);
+
+    if (sourceVault === targetVault) {
+      showFeedback("error", "Source and Target vaults cannot be identical.");
+      return;
+    }
+
+    if (!amt || amt <= 0) {
+      showFeedback("error", "Please provide a valid transfer amount.");
+      return;
+    }
+
+    const available = vaultBalances[sourceVault] || 0;
+    if (amt > available) {
+      showFeedback("error", `Insufficient liquidity in ${sourceVault}. Available: ${formatCurrency(available, currentCurrency)}`);
+      return;
+    }
+
+    if (onExecuteTransfer) {
       onExecuteTransfer({
-        sourceVault: p.from,
-        targetVault: p.to,
-        amount: p.amount,
-        note: "1-Click Auto-Rebalance Execution",
-        timestamp: Date.now()
+        id: `tr_${Date.now()}`,
+        amount: amt,
+        sourceVault,
+        targetVault,
+        note: transferNote.trim() || "Partition re-allocation",
+        date: new Date().toISOString()
       });
+
+      showFeedback("success", `Transferred ${formatCurrency(amt, currentCurrency)} to ${targetVault}.`);
+      setTransferAmount("");
+      setTransferNote("");
+    }
+  };
+
+  const handleAutoRebalance = () => {
+    const primaryDelta = vaultStats.find((v) => v.id === "primary")?.delta || 0;
+
+    if (Math.abs(primaryDelta) < 10) {
+      showFeedback("success", "Vaults are already in target equilibrium.");
+      return;
+    }
+
+    vaultStats.forEach((v) => {
+      if (v.id !== "primary" && v.delta < 0 && onExecuteTransfer) {
+        const transferNeeded = Math.min(Math.abs(v.delta), Math.max(0, vaultBalances.primary));
+        if (transferNeeded > 5) {
+          onExecuteTransfer({
+            id: `rebalance_${Date.now()}_${v.id}`,
+            amount: Math.round(transferNeeded),
+            sourceVault: "primary",
+            targetVault: v.id,
+            note: "Autonomous Equilibrium Alignment",
+            date: new Date().toISOString()
+          });
+        }
+      }
     });
+
+    showFeedback("success", "Automated equilibrium rebalancing executed.");
   };
 
   return (
-    <div className="relative space-y-8 sm:space-y-12 select-none pb-28 [perspective:1400px]">
-      {/* 1. Header Bar */}
-      <div className="p-6 sm:p-7 rounded-[36px] bg-white/90 backdrop-blur-xl border border-white/95 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 sm:space-y-8 select-none font-sans pb-28 w-full max-w-full overflow-hidden">
+      {/* Toast Feedback */}
+      <AnimatePresence>
+        {feedback && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className={`fixed top-20 right-4 sm:right-6 z-[150] px-4 py-2.5 rounded-2xl text-xs font-mono shadow-2xl border flex items-center gap-2 max-w-[90vw] ${
+              feedback.type === "error"
+                ? "bg-rose-950 text-white border-rose-800"
+                : "bg-zinc-950 text-white border-white/20"
+            }`}
+          >
+            {feedback.type === "error" ? (
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            )}
+            <span className="truncate">{feedback.msg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 1. Header & Rebalance Command Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-[28px] bg-white/80 backdrop-blur-xl border border-stone-200/80 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.04)]">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-orange-500/10 text-orange-600 border border-orange-500/20">
-              Multi-Vault Architecture
-            </span>
-            <span className="text-[10px] font-mono text-stone-400 flex items-center gap-1">
-              <Sparkles className="w-2.5 h-2.5 text-orange-500 animate-pulse" /> Kinetic Partition Engine
-            </span>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-black font-mono tracking-tight text-zinc-950 mt-1.5">
-            Capital Partitioning Suite
-          </h3>
-          <p className="text-xs text-stone-500 font-sans mt-0.5">
-            Segmented liquidity protection across operating, reserve, and growth vaults.
+          <span className="text-[10px] font-mono uppercase tracking-widest text-orange-600 font-bold">
+            Liquidity Partitions
+          </span>
+          <h2 className="text-xl sm:text-2xl font-black font-mono tracking-tight text-zinc-950">
+            Multi-Vault Kinetic Engine
+          </h2>
+          <p className="text-xs text-stone-500 font-mono mt-0.5">
+            100% Client-Side Isolated Balances • 50/30/20 Target Allocation
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          {isEquilibriumNeeded && (
-            <button
-              type="button"
-              onClick={() => setIsRebalanceModalOpen(true)}
-              className="px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-800 text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-amber-600" />
-              <span>Auto-Rebalance ({maxVariance}% Off)</span>
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setIsTransferModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-mono font-bold flex items-center gap-2 shadow-lg shadow-zinc-950/10 transition-all cursor-pointer"
-          >
-            <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
-            <span>Transfer Capital</span>
-          </button>
-        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+          type="button"
+          onClick={handleAutoRebalance}
+          className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-mono font-bold flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all relative overflow-hidden"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+          <span>Equilibrium Rebalance</span>
+        </motion.button>
       </div>
 
-      {/* 2. Autonomous Equilibrium Alert Banner (Triggers on Variance) */}
-      {isEquilibriumNeeded && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 sm:p-5 rounded-[26px] bg-gradient-to-r from-orange-50 via-amber-50 to-stone-50 border border-orange-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0 border border-orange-200">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-xs font-mono font-bold text-zinc-900">
-                Partition Equilibrium Discrepancy Detected ({maxVariance}% Drift)
-              </h4>
-              <p className="text-[11px] font-sans text-stone-600 mt-0.5">
-                Current vault balances deviate from target allocation benchmarks. 1-Click Rebalance is available.
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsRebalanceModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-mono font-bold flex items-center gap-1.5 shrink-0 shadow-sm transition-all cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-orange-200" />
-            <span>Review Equilibrium</span>
-          </button>
-        </motion.div>
-      )}
-
-      {/* 3. Three Dedicated Cradled Vault Monoliths */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 pt-2 [transform-style:preserve-3d]">
-        {VAULT_CONFIGS.map((cfg) => {
-          const Icon = cfg.icon;
-          const balance = vaultBalances[cfg.id] || 0;
-          const actualShare = totalLiquidity > 0 ? Math.round((balance / totalLiquidity) * 100) : 0;
-          const variance = actualShare - cfg.targetShare;
+      {/* 2. Top Vault Monoliths */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        {vaultStats.map((vault) => {
+          const Icon = vault.icon;
+          const isOverTarget = vault.delta >= 0;
 
           return (
-            <BotanicalCradle key={cfg.id} variant={cfg.variant} floatDelay={cfg.floatDelay}>
-              <div className="p-6 rounded-[34px] bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_25px_50px_-15px_rgba(0,0,0,0.06),0_0_30px_rgba(255,255,255,0.9)_inset] flex flex-col justify-between min-h-[340px]">
-                <div>
-                  <div className="flex items-center justify-between pb-3.5 border-b border-stone-100">
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border shadow-2xs ${cfg.badgeColor}`}>
-                      <Icon className="w-5 h-5" />
+            <motion.div
+              key={vault.id}
+              whileHover={{ y: -3 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="p-5 sm:p-6 rounded-[28px] bg-white/85 backdrop-blur-xl border border-stone-200/80 shadow-[0_12px_30px_-12px_rgba(0,0,0,0.05)] flex flex-col justify-between space-y-4"
+            >
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${vault.bgTint} ${vault.borderTint}`}>
+                      <Icon className={`w-4 h-4 ${vault.textTint}`} />
                     </div>
-                    <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${cfg.badgeColor}`}>
-                      {cfg.tag}
-                    </span>
-                  </div>
-
-                  <div className="mt-4">
-                    <h4 className="text-base font-bold font-mono text-zinc-950">{cfg.label}</h4>
-                    <p className="text-[11px] font-sans text-stone-500 mt-1 min-h-[34px] leading-relaxed">
-                      {cfg.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-stone-100">
-                    <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block">
-                      Vault Liquidity
-                    </span>
-                    <p className="text-2xl font-mono font-black text-zinc-950 mt-0.5">
-                      {formatCurrency(balance, currentCurrency)}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-mono">
-                      <span className="text-stone-500">Allocation Share</span>
-                      <span className="font-bold text-zinc-900">
-                        {actualShare}% <span className="text-stone-400 font-normal">/ {cfg.targetShare}% Target</span>
-                      </span>
-                    </div>
-                    
-                    <div className="w-full h-2.5 rounded-full bg-stone-100 p-0.5 overflow-hidden relative shadow-inner">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, actualShare)}%` }}
-                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                        className={`h-full rounded-full ${cfg.barColor} shadow-xs relative overflow-hidden`}
-                      >
-                        <motion.div
-                          animate={{ x: ["-100%", "200%"] }}
-                          transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }}
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-1/2"
-                        />
-                      </motion.div>
+                    <div className="truncate">
+                      <h4 className="text-xs sm:text-sm font-bold font-mono text-zinc-950 truncate">{vault.name}</h4>
+                      <span className="text-[10px] font-mono text-stone-400">Target: {vault.targetRatio}%</span>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-5 pt-3 border-t border-stone-100 flex items-center justify-between text-[10px] font-mono text-stone-400">
-                  <span>Variance:</span>
-                  <span className={`font-bold ${variance >= 0 ? "text-emerald-600" : "text-amber-600"}`}>
-                    {variance >= 0 ? `+${variance}% Over` : `${variance}% Under`}
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${vault.bgTint} ${vault.textTint} border ${vault.borderTint}`}>
+                    {vault.actualRatio.toFixed(1)}%
                   </span>
                 </div>
+
+                <div className="mt-3.5">
+                  <span className="text-[10px] font-mono uppercase text-stone-400 block">Current Partition</span>
+                  <h3 className="text-xl sm:text-2xl font-mono font-black text-zinc-950 mt-0.5 truncate tracking-tight">
+                    {formatCurrency(vault.balance, currentCurrency)}
+                  </h3>
+                  <p className="text-[11px] font-mono text-stone-500 mt-1.5 leading-relaxed line-clamp-2">
+                    {vault.description}
+                  </p>
+                </div>
               </div>
-            </BotanicalCradle>
+
+              <div className="space-y-1.5 pt-2 border-t border-stone-100 font-mono text-xs">
+                <div className="flex items-center justify-between text-[10px] sm:text-[11px]">
+                  <span className="text-stone-400">Equilibrium:</span>
+                  <span className="font-semibold text-zinc-800 truncate">
+                    {formatCurrency(vault.targetBalance, currentCurrency)}
+                  </span>
+                </div>
+
+                <div className="w-full h-2 rounded-full bg-stone-100 overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, vault.actualRatio)}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: vault.color }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className={`truncate font-semibold ${isOverTarget ? "text-emerald-600" : "text-amber-600"}`}>
+                    {isOverTarget ? "Equilibrium Met" : `${formatCurrency(Math.abs(vault.delta), currentCurrency)} under target`}
+                  </span>
+                  <span className="text-stone-400 shrink-0">Rule: Active</span>
+                </div>
+              </div>
+            </motion.div>
           );
         })}
       </div>
 
-      {/* 4. Re-allocation Audit Trail */}
-      <div className="p-6 sm:p-8 rounded-[36px] bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.04)]">
-        <div className="flex items-center justify-between pb-3.5 border-b border-stone-100">
-          <div>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-orange-600">
-              Audit Trail
-            </span>
-            <h4 className="text-base font-bold font-mono text-zinc-950 mt-0.5">
-              Vault Movement Journal
-            </h4>
-          </div>
-          <span className="text-xs font-mono text-stone-400">
-            {transferHistory.length} Recorded Transfers
-          </span>
-        </div>
+      {/* 3. Bottom Dual Tier — Proper p-4 sm:p-6 Padding Added */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 pt-2 [transform-style:preserve-3d]">
+        
+        {/* Left: Inter-Vault Shift Terminal Card */}
+        <BotanicalCradle variant="amber" floatDelay={0.1}>
+          <div className="w-full max-w-full space-y-5 p-3 sm:p-5">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-stone-100 gap-2 w-full">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 border border-orange-200">
+                  <ArrowRightLeft className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold font-mono text-zinc-950 truncate leading-tight">
+                    Inter-Vault Shift Terminal
+                  </h3>
+                  <p className="text-[10px] font-mono text-stone-400 truncate">Atomic Internal Re-allocation</p>
+                </div>
+              </div>
+              <span className="self-start sm:self-auto text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                0% Fee • Instant
+              </span>
+            </div>
 
-        <div className="divide-y divide-stone-100 mt-2 font-mono text-xs">
-          {transferHistory.length > 0 ? (
-            transferHistory.map((item, idx) => (
-              <div key={idx} className="py-3.5 flex items-center justify-between gap-3 group transition-colors">
-                <div className="flex items-center gap-2.5 truncate">
-                  <div className="w-8 h-8 rounded-xl bg-stone-100 text-stone-600 flex items-center justify-center shrink-0 group-hover:bg-orange-50 group-hover:text-orange-600 transition-colors">
-                    <ArrowRightLeft className="w-4 h-4" />
-                  </div>
-                  <div className="truncate">
-                    <p className="text-xs font-bold text-zinc-900 truncate">
-                      {item.note || "Internal Vault Transfer"}
-                    </p>
-                    <p className="text-[10px] text-stone-400 mt-0.5">
-                      <span className="capitalize">{item.sourceVault}</span> → <span className="capitalize">{item.targetVault}</span> • {new Date(item.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                  </div>
+            {/* Form */}
+            <form onSubmit={handleTransferSubmit} className="space-y-4 font-mono text-xs w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                <div className="w-full min-w-0">
+                  <label className="text-[10px] uppercase text-stone-400 font-bold block mb-1.5">Source Partition</label>
+                  <select
+                    value={sourceVault}
+                    onChange={(e) => setSourceVault(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-zinc-900 focus:outline-none focus:border-orange-500 cursor-pointer text-xs"
+                  >
+                    <option value="primary">Primary Operating</option>
+                    <option value="reserve">Tax & Runway Reserve</option>
+                    <option value="growth">Growth & R&D Capital</option>
+                  </select>
                 </div>
 
-                <span className="font-bold text-zinc-950 shrink-0">
-                  {formatCurrency(item.amount, currentCurrency)}
-                </span>
+                <div className="w-full min-w-0">
+                  <label className="text-[10px] uppercase text-stone-400 font-bold block mb-1.5">Target Partition</label>
+                  <select
+                    value={targetVault}
+                    onChange={(e) => setTargetVault(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-zinc-900 focus:outline-none focus:border-orange-500 cursor-pointer text-xs"
+                  >
+                    <option value="reserve">Tax & Runway Reserve</option>
+                    <option value="primary">Primary Operating</option>
+                    <option value="growth">Growth & R&D Capital</option>
+                  </select>
+                </div>
               </div>
-            ))
-          ) : (
-            <div className="py-10 text-center text-xs font-mono text-stone-400">
-              No internal vault transfers executed yet. Tap "Transfer Capital" to partition funds.
+
+              <div className="w-full min-w-0">
+                <label className="text-[10px] uppercase text-stone-400 font-bold block mb-1.5">
+                  Transfer Amount ({currentCurrency})
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  placeholder="0.00"
+                  value={transferAmount}
+                  onChange={(e) => setTransferAmount(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-zinc-900 placeholder:text-stone-400 focus:outline-none focus:border-orange-500 text-xs"
+                />
+              </div>
+
+              <div className="w-full min-w-0">
+                <label className="text-[10px] uppercase text-stone-400 font-bold block mb-1.5">Internal Allocation Note</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Q4 Tax Reserve Buffer"
+                  value={transferNote}
+                  onChange={(e) => setTransferNote(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-zinc-900 placeholder:text-stone-400 focus:outline-none focus:border-orange-500 text-xs"
+                />
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                className="w-full py-3 rounded-full bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] hover:brightness-105 text-white font-mono font-bold text-xs tracking-wider flex items-center justify-center gap-2 shadow-md shadow-orange-600/25 cursor-pointer transition-all mt-3"
+              >
+                <ArrowRightLeft className="w-4 h-4 text-orange-200 shrink-0" />
+                <span className="truncate">EXECUTE INTERNAL RE-ALLOCATION</span>
+              </motion.button>
+            </form>
+          </div>
+        </BotanicalCradle>
+
+        {/* Right: Internal Transfer Audit Log Card */}
+        <BotanicalCradle variant="emerald" floatDelay={0.3}>
+          <div className="w-full max-w-full flex flex-col justify-between h-full space-y-5 p-3 sm:p-5">
+            <div>
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3.5 border-b border-stone-100 gap-2 w-full">
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold font-mono text-zinc-950 truncate leading-tight">
+                    Internal Transfer Audit
+                  </h3>
+                  <p className="text-[10px] font-mono text-stone-400 mt-0.5 truncate">Real-time ledger of adjustments</p>
+                </div>
+                <div className="text-right shrink-0 bg-stone-50 px-2.5 py-1 rounded-xl border border-stone-200/70">
+                  <span className="text-xs font-mono font-black text-zinc-950 block leading-tight">{transferHistory.length}</span>
+                  <span className="text-[8px] font-mono text-stone-400 block uppercase font-bold">Recorded</span>
+                </div>
+              </div>
+
+              {/* Transactions List */}
+              <div className="mt-2.5 divide-y divide-stone-100/80 font-mono text-xs max-h-64 sm:max-h-72 overflow-y-auto no-scrollbar w-full">
+                {transferHistory.length === 0 ? (
+                  <div className="py-12 text-center text-stone-400 text-xs font-mono">
+                    No internal transfers executed yet.
+                  </div>
+                ) : (
+                  transferHistory.map((item) => (
+                    <div
+                      key={item.id}
+                      className="py-3 flex items-center justify-between gap-2 hover:bg-stone-50/60 px-2 rounded-xl transition-colors w-full"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <div className="w-7 h-7 rounded-lg bg-stone-100 text-zinc-700 flex items-center justify-center shrink-0 border border-stone-200/80">
+                          <ArrowRightLeft className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-zinc-900 truncate text-[11px] sm:text-xs leading-tight">
+                            <span className="capitalize">{item.sourceVault}</span> → <span className="capitalize">{item.targetVault}</span>
+                          </p>
+                          <span className="text-[9px] sm:text-[10px] text-stone-400 block truncate mt-0.5">
+                            {item.note} • {formatDate(item.date)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <span className="font-black text-xs sm:text-sm text-zinc-950 shrink-0 text-right pl-2">
+                        {formatCurrency(item.amount, currentCurrency)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Status Footer */}
+            <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200/70 text-[10px] sm:text-[11px] font-mono text-stone-500 flex items-center justify-between mt-2 w-full">
+              <span>Equilibrium: <strong>Nominal</strong></span>
+              <span className="text-emerald-600 font-bold flex items-center gap-1 shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5" /> Client Partitioned
+              </span>
+            </div>
+          </div>
+        </BotanicalCradle>
+
       </div>
-
-      {/* Transfer Capital Modal */}
-      <VaultTransferModal
-        isOpen={isTransferModalOpen}
-        onClose={() => setIsTransferModalOpen(false)}
-        vaultBalances={vaultBalances}
-        onTransfer={onExecuteTransfer}
-        currentCurrency={currentCurrency}
-      />
-
-      {/* 1-Click Auto Rebalance Proposal Modal */}
-      <AutoRebalanceModal
-        isOpen={isRebalanceModalOpen}
-        onClose={() => setIsRebalanceModalOpen(false)}
-        proposals={proposals}
-        totalLiquidity={totalLiquidity}
-        onApplyRebalance={handleApplyBatchRebalance}
-        currentCurrency={currentCurrency}
-      />
     </div>
   );
 }
