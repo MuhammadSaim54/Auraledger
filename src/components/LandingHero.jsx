@@ -1,419 +1,725 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState, useRef } from "react";
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import {
-    ArrowRight,
-    Sparkles,
-    ShieldCheck,
-    Zap,
-    Lock,
-    Globe,
-    CheckCircle2,
-    TrendingUp,
-    CreditCard,
-    FileSpreadsheet,
-    Vault,
-    ChevronRight,
-    Wifi,
-    Coins
+  ArrowRight,
+  Sparkles,
+  ShieldCheck,
+  TrendingUp,
+  ChevronRight,
+  ReceiptText,
+  Lock,
+  Flame,
+  Plus,
+  ArrowDownRight,
+  ArrowUpRight,
+  Check,
+  X,
+  Zap,
+  Cpu,
+  Layers,
+  Terminal,
+  Activity,
+  Globe,
+  Radio,
+  ExternalLink
 } from "lucide-react";
 
 export default function LandingHero({ onOpenAuth }) {
-    return (
-        <div className="min-h-screen w-full bg-[#fbfaf8] text-zinc-900 flex flex-col justify-between relative overflow-hidden select-none">
+  const containerRef = useRef(null);
 
-            {/* Dynamic Background: Mesh Glow & Subtle FinTech Grid */}
-            <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-[-10%] right-[-5%] w-[600px] sm:w-[750px] h-[600px] sm:h-[750px] bg-gradient-to-bl from-orange-400/20 via-amber-200/15 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-                <div className="absolute top-[40%] left-[-10%] w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] bg-gradient-to-tr from-amber-300/15 via-orange-100/25 to-transparent rounded-full blur-3xl" />
-                <div className="absolute bottom-[-10%] right-[10%] w-[450px] h-[450px] bg-gradient-to-tl from-orange-300/15 to-transparent rounded-full blur-3xl" />
+  // Live Interactive Capital State
+  const [balance, setBalance] = useState(248500);
+  const [transactions, setTransactions] = useState([
+    { id: 1, title: "AWS Compute Cluster H100", cat: "Infrastructure", amount: -482.50, type: "outflow", vault: "Operating" },
+    { id: 2, title: "Stripe Enterprise Settlement", cat: "Treasury Inflow", amount: +14250.00, type: "inflow", vault: "Primary" },
+    { id: 3, title: "Anthropic Claude API Batch", cat: "Inference", amount: -89.40, type: "outflow", vault: "R&D Lab" }
+  ]);
 
-                {/* Subtle Perspective Grid Matrix */}
-                <div
-                    className="absolute inset-0 opacity-[0.035]"
-                    style={{
-                        backgroundImage: `linear-gradient(to right, #18181b 1px, transparent 1px), linear-gradient(to bottom, #18181b 1px, transparent 1px)`,
-                        backgroundSize: '48px 48px'
-                    }}
-                />
+  // High Precision Pointer Physics
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { stiffness: 85, damping: 24, mass: 0.75 };
+  const smoothX = useSpring(mouseX, springConfig);
+  const smoothY = useSpring(mouseY, springConfig);
+
+  const cardRotateX = useTransform(smoothY, [-0.5, 0.5], [6, -6]);
+  const cardRotateY = useTransform(smoothX, [-0.5, 0.5], [-8, 8]);
+
+  const leafTopX = useTransform(smoothX, [-0.5, 0.5], [-12, 12]);
+  const leafTopY = useTransform(smoothY, [-0.5, 0.5], [-8, 8]);
+  const leafBottomX = useTransform(smoothX, [-0.5, 0.5], [14, -14]);
+  const leafBottomY = useTransform(smoothY, [-0.5, 0.5], [10, -10]);
+
+  const handleMouseMove = (e) => {
+    if (!containerRef.current || window.innerWidth < 1024) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  const handleSimulateInflow = () => {
+    const samples = [
+      { title: "Client Sovereign Retainer", cat: "Retainer", amount: +8500.00, type: "inflow", vault: "Primary" },
+      { title: "Supabase Cloud Enterprise", cat: "Database", amount: -120.00, type: "outflow", vault: "Operating" },
+      { title: "Figma Organization Seat", cat: "Tooling", amount: -45.00, type: "outflow", vault: "Lab" }
+    ];
+    const picked = samples[Math.floor(Math.random() * samples.length)];
+    const newTx = {
+      id: Date.now(),
+      title: picked.title,
+      cat: picked.cat,
+      amount: picked.amount,
+      type: picked.type,
+      vault: picked.vault
+    };
+    setTransactions((prev) => [newTx, ...prev.slice(0, 2)]);
+    setBalance((prev) => prev + picked.amount);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="min-h-screen w-full bg-[#fbf9f5] text-zinc-950 flex flex-col justify-between relative overflow-x-hidden select-none font-sans"
+    >
+      {/* 1. ARCHITECTURAL LIVING AURA LIGHT */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Soft Terracotta Solar Flare */}
+        <motion.div
+          animate={{
+            scale: [1, 1.22, 1],
+            x: [0, 40, 0],
+            y: [0, -30, 0],
+            opacity: [0.32, 0.5, 0.32]
+          }}
+          transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-40 right-[8%] w-[850px] h-[850px] bg-gradient-to-bl from-orange-400/30 via-amber-200/20 to-transparent rounded-full blur-[140px]"
+        />
+
+        {/* Bioluminescent Emerald Breath */}
+        <motion.div
+          animate={{
+            scale: [1.12, 0.95, 1.12],
+            x: [0, -40, 0],
+            y: [0, 35, 0],
+            opacity: [0.22, 0.4, 0.22]
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[28%] -left-40 w-[780px] h-[780px] bg-gradient-to-tr from-emerald-400/25 via-teal-200/15 to-transparent rounded-full blur-[140px]"
+        />
+
+        {/* Precision Sub-Pixel Architectural Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.026]"
+          style={{
+            backgroundImage: `linear-gradient(to right, #18181b 1px, transparent 1px), linear-gradient(to bottom, #18181b 1px, transparent 1px)`,
+            backgroundSize: "36px 36px"
+          }}
+        />
+      </div>
+
+      {/* 2. CHASSIS MINIMALIST NAVBAR (Level-Up Luxury Porcelain Pill) */}
+      <header className="sticky top-0 z-50 w-full pt-4 px-3 sm:px-8 max-w-[1450px] mx-auto transition-all">
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="flex items-center justify-between gap-3 py-2.5 px-4 sm:px-7 rounded-full bg-white/80 backdrop-blur-2xl border border-stone-200/80 shadow-[0_12px_36px_-10px_rgba(0,0,0,0.06),0_1px_1.5px_rgba(255,255,255,1)_inset] hover:border-stone-300/80 transition-all group"
+        >
+          {/* Logo Mark with Caustic Halo */}
+          <div className="flex items-center gap-3 shrink-0 cursor-pointer">
+            <motion.div 
+              whileHover={{ rotate: 12, scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="relative w-9 h-9 rounded-2xl bg-gradient-to-b from-[#2a1308] to-[#120703] p-[1px] shadow-sm shadow-orange-950/20"
+            >
+              <div className="w-full h-full rounded-[15px] bg-[#170b05] flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-orange-600/40 via-transparent to-amber-400/20" />
+                <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-orange-500 relative z-10" fill="none">
+                  <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                  <path d="M12 3V12M12 12L20 7.5M12 12L4 7.5M12 12V21" stroke="#fdba74" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+              </div>
+            </motion.div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-sm font-bold tracking-tight text-zinc-950 leading-none">AuraLedger</h1>
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+              </div>
+              <p className="text-[9px] font-mono tracking-widest text-zinc-400 uppercase mt-0.5">Tactile FinOS</p>
+            </div>
+          </div>
+
+          {/* Center Micro-Status Pill (Subtle & Sleek) */}
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100/70 border border-stone-200/60 text-[11px] font-mono text-stone-600 shadow-2xs hover:bg-stone-100 transition-colors">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+            <span>Telemetry: <strong className="text-zinc-900 font-semibold">0ms Local Sandbox</strong></span>
+            <span className="text-stone-300">•</span>
+            <span className="text-stone-400">v5.2 Kinetic</span>
+          </div>
+
+          {/* Action Deck */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => onOpenAuth("signin")}
+              className="px-4 py-2 rounded-full text-xs font-mono font-bold text-zinc-700 hover:text-zinc-950 hover:bg-stone-100/60 transition-all cursor-pointer"
+            >
+              Sign In
+            </button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              type="button"
+              onClick={() => onOpenAuth("signup")}
+              className="relative px-5 py-2 rounded-full bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-mono font-bold shadow-md shadow-zinc-950/20 flex items-center gap-2 transition-all cursor-pointer overflow-hidden group"
+            >
+              {/* Traveling Shimmer Line */}
+              <motion.div
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
+              />
+              <span className="relative z-10">Launch Terminal</span>
+              <ArrowRight className="w-3.5 h-3.5 text-orange-400 group-hover:translate-x-0.5 transition-transform relative z-10" />
+            </motion.button>
+          </div>
+        </motion.div>
+      </header>
+
+      {/* 3. HERO STAGE */}
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16 pb-20">
+        
+        <div className="text-center flex flex-col items-center max-w-4xl mx-auto">
+          {/* Luminous Tag */}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-2xs text-[11px] font-mono mb-5 text-stone-600"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Autonomous Capital Operating System</span>
+            <span className="text-stone-300">•</span>
+            <span className="text-orange-600 font-bold flex items-center gap-1">
+              Phase 5 Sovereign <ChevronRight className="w-3 h-3" />
+            </span>
+          </motion.div>
+
+          {/* Masterpiece Editorial Display Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-[-0.04em] text-zinc-950 leading-[1.05] max-w-4xl"
+          >
+            Every Single Dollar Tracked. <br />
+            <span className="bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] bg-clip-text text-transparent">
+              Zero Spreadsheets. Zero Leaks.
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mt-5 text-sm sm:text-lg text-stone-500 max-w-2xl font-normal leading-relaxed tracking-tight"
+          >
+            Stop wrestling with clumsy Excel sheets and broken bank connections. AuraLedger delivers tactile financial certainty with real-time daily burn velocity, automated multi-vault partitions, and local encrypted custody.
+          </motion.p>
+
+          {/* Action CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto"
+          >
+            <button
+              type="button"
+              onClick={() => onOpenAuth("signup")}
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] hover:brightness-105 text-white font-mono font-bold text-xs tracking-wider flex items-center justify-center gap-2.5 shadow-lg shadow-orange-600/30 active:scale-95 transition-all cursor-pointer relative overflow-hidden group"
+            >
+              <motion.div
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 pointer-events-none"
+              />
+              <Plus className="w-4 h-4 text-orange-200" />
+              <span>RECORD FIRST EXPENSE</span>
+              <ArrowRight className="w-4 h-4 text-orange-200 group-hover:translate-x-1 transition-transform" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSimulateInflow}
+              className="w-full sm:w-auto px-7 py-4 rounded-full bg-white hover:bg-stone-50 border border-stone-200/90 text-zinc-900 font-mono font-semibold text-xs tracking-wide shadow-2xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+            >
+              <Zap className="w-3.5 h-3.5 text-orange-500 group-hover:scale-125 transition-transform" />
+              <span>SIMULATE LIVE INGESTION</span>
+            </button>
+          </motion.div>
+        </div>
+
+        {/* 4. THE $20,000 ARCHITECTURAL BOTANICAL CRADLE TELEMETRY CHASSIS */}
+        <div className="relative mt-16 sm:mt-24 max-w-5xl mx-auto isolate select-none [perspective:1400px]">
+          
+          {/* Top-Left Sculptural Emerald Leaf */}
+          <motion.div
+            style={{ x: leafTopX, y: leafTopY }}
+            animate={{
+              y: [-4, 5, -4],
+              rotate: [-20, -26, -20]
+            }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-10 -left-6 sm:-left-10 w-28 sm:w-36 h-36 sm:h-48 pointer-events-none -z-10 filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.08)]"
+          >
+            <svg viewBox="0 0 100 130" fill="none" className="w-full h-full">
+              <defs>
+                <linearGradient id="landingEmeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#d1fae5" stopOpacity="0.85" />
+                  <stop offset="45%" stopColor="#10b981" stopOpacity="0.7" />
+                  <stop offset="100%" stopColor="#047857" stopOpacity="0.3" />
+                </linearGradient>
+                <linearGradient id="landingVeinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M50 5 C75 25, 95 65, 80 115 C55 125, 20 100, 15 65 C12 35, 30 15, 50 5 Z"
+                fill="url(#landingEmeraldGrad)"
+                className="backdrop-blur-md"
+              />
+              <path d="M50 8 C52 45, 54 85, 50 118" stroke="url(#landingVeinGrad)" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M50 40 Q68 45, 78 55" stroke="url(#landingVeinGrad)" strokeWidth="0.8" strokeLinecap="round" opacity="0.6" />
+              <path d="M50 65 Q30 70, 24 82" stroke="url(#landingVeinGrad)" strokeWidth="0.8" strokeLinecap="round" opacity="0.6" />
+            </svg>
+          </motion.div>
+
+          {/* Bottom-Right Root Vine Leaf */}
+          <motion.div
+            style={{ x: leafBottomX, y: leafBottomY }}
+            animate={{
+              y: [4, -5, 4],
+              rotate: [15, 20, 15]
+            }}
+            transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+            className="absolute -bottom-10 -right-6 sm:-right-8 w-32 sm:w-42 h-38 sm:h-52 pointer-events-none -z-10 filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.1)]"
+          >
+            <svg viewBox="0 0 120 150" fill="none" className="w-full h-full">
+              <defs>
+                <linearGradient id="landingAmberGrad" x1="100%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stopColor="#d97706" stopOpacity="0.8" />
+                  <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.65" />
+                  <stop offset="100%" stopColor="#fffbeb" stopOpacity="0.2" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M60 140 C20 125, 10 75, 25 30 C45 10, 85 15, 95 50 C105 85, 90 125, 60 140 Z"
+                fill="url(#landingAmberGrad)"
+                className="backdrop-blur-md"
+              />
+              <path d="M60 138 C58 95, 55 55, 58 20" stroke="url(#landingVeinGrad)" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M58 50 Q40 55, 30 65" stroke="url(#landingVeinGrad)" strokeWidth="0.8" strokeLinecap="round" opacity="0.6" />
+              <path d="M58 80 Q75 88, 85 98" stroke="url(#landingVeinGrad)" strokeWidth="0.8" strokeLinecap="round" opacity="0.6" />
+            </svg>
+          </motion.div>
+
+          {/* Main Levitating Monolith Chassis */}
+          <motion.div
+            style={{
+              rotateX: cardRotateX,
+              rotateY: cardRotateY,
+              transformStyle: "preserve-3d"
+            }}
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            className="relative rounded-[36px] sm:rounded-[44px] bg-white/95 backdrop-blur-2xl border border-white/95 p-6 sm:p-9 shadow-[0_30px_85px_-20px_rgba(0,0,0,0.08),0_1px_1px_rgba(255,255,255,0.95)_inset] overflow-hidden"
+          >
+            {/* Running Caustic Prism Line */}
+            <div className="absolute inset-0 rounded-[inherit] pointer-events-none overflow-hidden p-[1px]">
+              <motion.div
+                animate={{ x: ["-150%", "250%"] }}
+                transition={{ duration: 4.8, repeat: Infinity, ease: "linear" }}
+                className="w-1/2 h-full bg-gradient-to-r from-transparent via-orange-400/25 to-transparent skew-x-12"
+              />
             </div>
 
-            {/* Top Navbar: 100% Transparent Seamless Header */}
-            <header className="relative z-40 w-full bg-transparent">
-                <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-5 sm:py-6 flex items-center justify-between gap-2">
-
-                    {/* Logo Mark */}
-                    <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 select-none">
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-b from-[#2a1308] to-[#120703] p-[1px] shadow-sm shadow-orange-950/20">
-                            <div className="w-full h-full rounded-[11px] bg-[#1a0c05] flex items-center justify-center">
-                                <svg viewBox="0 0 24 24" className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" fill="none">
-                                    <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-                                    <path d="M12 3V12M12 12L20 7.5M12 12L4 7.5M12 12V21" stroke="#fdba74" strokeWidth="1.2" strokeLinecap="round" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div>
-                            <h1 className="text-sm sm:text-base font-bold tracking-tight text-zinc-950 leading-none">AuraLedger</h1>
-                            <p className="text-[9px] sm:text-[10px] font-mono tracking-widest text-zinc-400 mt-0.5 uppercase">FinOS v2.4</p>
-                        </div>
-                    </div>
-
-                    {/* Action CTAs */}
-                    <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                        <button
-                            onClick={() => onOpenAuth("signin")}
-                            className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-mono font-medium text-zinc-700 hover:text-zinc-950 hover:bg-stone-200/40 transition-colors cursor-pointer"
-                        >
-                            Sign In
-                        </button>
-                        <button
-                            onClick={() => onOpenAuth("signup")}
-                            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold shadow-sm active:scale-95 transition-all cursor-pointer whitespace-nowrap"
-                        >
-                            Get Started
-                        </button>
-                    </div>
+            {/* Header Telemetry Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 border-b border-stone-100 gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                 </div>
-            </header>
-            
-            {/* Main Content Area */}
-            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-8 sm:pt-16 pb-16">
+                <span className="text-xs font-mono text-stone-400 ml-1">
+                  auraledger.engine • Kinetic Multi-Vault Telemetry
+                </span>
+              </div>
 
-                {/* HERO HEADER */}
-                <div className="text-center flex flex-col items-center max-w-4xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-700 text-[11px] sm:text-xs font-mono font-semibold mb-4 sm:mb-6 shadow-xs"
-                    >
-                        <Sparkles className="w-3.5 h-3.5 text-orange-600" />
-                        <span>Next-Gen Financial Architecture</span>
-                    </motion.div>
+              <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70 flex items-center gap-1.5 shadow-2xs">
+                <ShieldCheck className="w-3.5 h-3.5" /> 100% Retained Runway
+              </span>
+            </div>
 
-                    <motion.h1
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.35, delay: 0.05 }}
-                        className="text-3xl sm:text-5xl lg:text-7xl font-black tracking-tight text-zinc-950 leading-[1.12] sm:leading-[1.08]"
-                    >
-                        Master Your Liquidity. <br />
-                        <span className="bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] bg-clip-text text-transparent">
-                            Without Cloud Intrusion.
-                        </span>
-                    </motion.h1>
+            {/* Three Monolith Slabs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-5">
+              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
+                <span className="text-[10px] font-mono uppercase text-stone-400 block">Total Liquidity</span>
+                <h4 className="text-2xl font-mono font-black text-zinc-950 mt-1">
+                  ${balance.toLocaleString()}.00
+                </h4>
+                <p className="text-[10px] font-mono text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" /> +18.4% this cycle
+                </p>
+              </div>
 
-                    <motion.p
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.35, delay: 0.1 }}
-                        className="mt-4 sm:mt-5 text-xs sm:text-base text-zinc-500 max-w-2xl leading-relaxed px-2 sm:px-0"
-                    >
-                        A high-velocity financial operating system engineered for creators, freelancers, and operators. Features sandboxed local tenant isolation, predictive daily spend burn-rate, and multi-currency liquidity tracking.
-                    </motion.p>
+              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
+                <span className="text-[10px] font-mono uppercase text-stone-400 block">Safe Daily Pace</span>
+                <h4 className="text-2xl font-mono font-black text-zinc-950 mt-1">
+                  $214.50<span className="text-xs font-normal text-stone-400">/day</span>
+                </h4>
+                <p className="text-[10px] font-mono text-orange-600 font-bold mt-1.5 flex items-center gap-1">
+                  <Flame className="w-3 h-3" /> 52.5 Mo Horizon
+                </p>
+              </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.35, delay: 0.15 }}
-                        className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto px-4 sm:px-0"
-                    >
-                        <button
-                            onClick={() => onOpenAuth("signup")}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] hover:brightness-110 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-orange-600/25 active:scale-95 transition-all cursor-pointer group"
-                        >
-                            <span>Initialize Workspace</span>
-                            <ArrowRight className="w-4 h-4 text-orange-200 group-hover:translate-x-1 transition-transform" />
-                        </button>
+              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/80 border border-stone-200/70 shadow-2xs">
+                <span className="text-[10px] font-mono uppercase text-stone-400 block">Reserve Fund</span>
+                <h4 className="text-2xl font-mono font-black text-zinc-950 mt-1">
+                  30% Protected
+                </h4>
+                <p className="text-[10px] font-mono text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Jan 2031 Depletion
+                </p>
+              </div>
+            </div>
 
-                        <button
-                            onClick={() => onOpenAuth("signin")}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200/90 text-zinc-800 text-xs sm:text-sm font-semibold shadow-xs active:scale-95 transition-all cursor-pointer"
-                        >
-                            <span>Existing Vault Access</span>
-                        </button>
-                    </motion.div>
-                </div>
-
-                {/* BESPOKE FLOATING FINANCIAL CARDS & MAGNETIC BEAM SCENE */}
-                <div className="relative mt-12 sm:mt-16 max-w-4xl mx-auto h-[260px] sm:h-[340px] flex items-center justify-center">
-
-                    {/* Ambient Magnetic Beam Ring */}
-                    <div className="absolute w-[280px] sm:w-[480px] h-[140px] sm:h-[220px] rounded-full border border-orange-500/25 bg-gradient-to-b from-orange-400/10 to-transparent blur-xs pointer-events-none transform -rotate-6" />
-
-                    {/* Card 1: Primary Obsidian Vault Card (Floats Left & Tilted) */}
-                    <motion.div
-                        animate={{ y: [-6, 6, -6], rotate: [-8, -6, -8] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute left-2 sm:left-12 top-4 sm:top-8 w-52 sm:w-72 h-32 sm:h-44 rounded-2xl sm:rounded-3xl p-4 sm:p-5 bg-gradient-to-br from-[#1c1917] via-[#09090b] to-[#000000] text-white border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col justify-between z-10"
-                    >
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] sm:text-xs font-mono tracking-widest text-orange-400 uppercase font-semibold">Primary Vault</span>
-                            <Wifi className="w-4 h-4 text-zinc-400 rotate-90" />
-                        </div>
-                        <div>
-                            <p className="text-[9px] sm:text-[10px] font-mono text-zinc-400">AVAILABLE LIQUIDITY</p>
-                            <h3 className="text-base sm:text-xl font-bold font-mono tracking-tight text-white mt-0.5">$24,850.00</h3>
-                        </div>
-                        <div className="flex items-center justify-between text-[9px] sm:text-[11px] font-mono text-zinc-400 pt-1 border-t border-white/10">
-                            <span>•••• 9286</span>
-                            <span className="text-orange-300 font-bold">VISA</span>
-                        </div>
-                    </motion.div>
-
-                    {/* Card 2: Radiant Terracotta Card (Floats Right & Tilted) */}
-                    <motion.div
-                        animate={{ y: [8, -8, 8], rotate: [10, 8, 10] }}
-                        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute right-2 sm:right-12 bottom-4 sm:bottom-6 w-52 sm:w-72 h-32 sm:h-44 rounded-2xl sm:rounded-3xl p-4 sm:p-5 bg-gradient-to-br from-[#c2410c] via-[#ea580c] to-[#f97316] text-white border border-orange-300/30 shadow-[0_25px_60px_rgba(234,88,12,0.28)] flex flex-col justify-between z-20"
-                    >
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] sm:text-xs font-mono tracking-widest text-orange-100 uppercase font-semibold">Reserve Fund</span>
-                            <Coins className="w-4 h-4 text-orange-200" />
-                        </div>
-                        <div>
-                            <p className="text-[9px] sm:text-[10px] font-mono text-orange-100/80">SAFE DAILY PACE</p>
-                            <h3 className="text-base sm:text-xl font-bold font-mono tracking-tight text-white mt-0.5">$214.50<span className="text-xs font-normal opacity-80">/day</span></h3>
-                        </div>
-                        <div className="flex items-center justify-between text-[9px] sm:text-[11px] font-mono text-orange-100 pt-1 border-t border-white/20">
-                            <span>ACTIVE PACING</span>
-                            <span className="font-bold">OPTIMAL</span>
-                        </div>
-                    </motion.div>
-
-                    {/* Center Floating Glass Orb Badge */}
-                    <motion.div
-                        animate={{ scale: [0.98, 1.03, 0.98], y: [-4, 4, -4] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className="relative z-30 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl bg-white/90 backdrop-blur-xl border border-stone-200 shadow-xl flex items-center gap-2.5"
-                    >
-                        <div className="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-xs">
-                            <TrendingUp className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <p className="text-[9px] font-mono uppercase text-zinc-400">Cycle Runway</p>
-                            <p className="text-xs sm:text-sm font-bold font-mono text-zinc-900">+18.4% Safe</p>
-                        </div>
-                    </motion.div>
-
-                </div>
-
-                {/* SECTION 1: INTERACTIVE PRODUCT UI SIMULATION */}
-                <motion.div
-                    initial={{ opacity: 0, y: 25 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4 }}
-                    className="mt-10 sm:mt-16 rounded-2xl sm:rounded-3xl border border-stone-200/90 bg-white/95 backdrop-blur-2xl p-4 sm:p-7 shadow-[0_20px_70px_rgba(0,0,0,0.05)] relative overflow-hidden"
+            {/* Live Interactive Ingest Feed */}
+            <div className="mt-5 p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-2xs">
+              <div className="flex items-center justify-between text-xs font-mono text-stone-400 pb-2.5 border-b border-stone-100 mb-2.5">
+                <span>RECENT REAL-TIME INGEST STREAM</span>
+                <button
+                  type="button"
+                  onClick={handleSimulateInflow}
+                  className="text-orange-600 hover:text-orange-700 font-bold flex items-center gap-1 cursor-pointer transition-colors"
                 >
-                    <div className="flex items-center justify-between pb-3 sm:pb-4 mb-4 sm:mb-5 border-b border-stone-100">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
-                            <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                            <span className="text-[10px] sm:text-[11px] font-mono text-stone-400 ml-1.5 truncate max-w-[180px] sm:max-w-none">
-                                auraledger.app • Live Telemetry Simulation
-                            </span>
-                        </div>
-                        <div className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span>0ms Latency</span>
-                        </div>
-                    </div>
+                  <Plus className="w-3.5 h-3.5" /> Push Mock Tx
+                </button>
+              </div>
 
-                    {/* Mini Dashboard Preview */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                        <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200/70">
-                            <p className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-zinc-400">Total Net Liquidity</p>
-                            <h4 className="text-xl sm:text-2xl font-bold font-mono text-zinc-950 mt-1">$24,850.00</h4>
-                            <p className="text-[10px] sm:text-[11px] font-mono text-emerald-600 mt-1.5 flex items-center gap-1">
-                                <TrendingUp className="w-3 h-3" /> +18.4% this month
-                            </p>
-                        </div>
+              <div className="divide-y divide-stone-100 font-mono text-xs">
+                <AnimatePresence mode="popLayout">
+                  {transactions.map((tx) => {
+                    const isInflow = tx.type === "inflow";
 
-                        <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200/70">
-                            <p className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-zinc-400">Safe Daily Burn Rate</p>
-                            <h4 className="text-xl sm:text-2xl font-bold font-mono text-zinc-950 mt-1">$214.50<span className="text-xs font-normal text-zinc-400">/day</span></h4>
-                            <p className="text-[10px] sm:text-[11px] font-mono text-amber-600 mt-1.5 flex items-center gap-1">
-                                <Sparkles className="w-3 h-3" /> Optimal runway pace
-                            </p>
+                    return (
+                      <motion.div
+                        key={tx.id}
+                        layout
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="py-2.5 flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-2.5 truncate">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border ${
+                            isInflow ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"
+                          }`}>
+                            {isInflow ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                          </div>
+                          <div className="truncate">
+                            <p className="font-bold text-zinc-900 truncate">{tx.title}</p>
+                            <span className="text-[9px] text-stone-400">#{tx.cat.toLowerCase()} • {tx.vault}</span>
+                          </div>
                         </div>
 
-                        <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200/70">
-                            <p className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-zinc-400">Active Vault Reserves</p>
-                            <h4 className="text-xl sm:text-2xl font-bold font-mono text-zinc-950 mt-1">3 Targets</h4>
-                            <p className="text-[10px] sm:text-[11px] font-mono text-orange-600 mt-1.5 flex items-center gap-1">
-                                <ShieldCheck className="w-3 h-3" /> 68% milestone complete
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="mt-3.5 sm:mt-4 p-3.5 sm:p-4 rounded-2xl bg-white border border-stone-200/80">
-                        <div className="flex items-center justify-between text-[10px] sm:text-xs font-mono text-zinc-400 pb-2 border-b border-stone-100 mb-2">
-                            <span>RECENT LEDGER STREAM</span>
-                            <span>REAL-TIME AUDIT</span>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between py-1 text-xs">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-[9px]">ST</div>
-                                    <div className="min-w-0">
-                                        <p className="font-semibold text-zinc-900 truncate text-[11px] sm:text-xs">Stripe Settlement</p>
-                                        <p className="text-[9px] font-mono text-zinc-400">Primary Inflow • #client</p>
-                                    </div>
-                                </div>
-                                <span className="font-mono font-bold text-emerald-600 text-xs sm:text-sm shrink-0">+$2,450.00</span>
-                            </div>
-                            <div className="flex items-center justify-between py-1 text-xs">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-lg bg-stone-200 text-stone-700 flex items-center justify-center font-bold text-[9px]">VC</div>
-                                    <div className="min-w-0">
-                                        <p className="font-semibold text-zinc-900 truncate text-[11px] sm:text-xs">Vercel Edge Cloud</p>
-                                        <p className="text-[9px] font-mono text-zinc-400">Infrastructure • #devops</p>
-                                    </div>
-                                </div>
-                                <span className="font-mono font-bold text-zinc-900 text-xs sm:text-sm shrink-0">-$20.00</span>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* SECTION 2: WHY AURALEDGER (PROBLEM VS SOLUTION) */}
-                <div className="mt-16 sm:mt-28">
-                    <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-14">
-                        <h2 className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-orange-600 font-bold">The Strategic Advantage</h2>
-                        <p className="text-2xl sm:text-4xl font-extrabold text-zinc-950 mt-1 tracking-tight">Why Switch From Spreadsheets?</p>
-                        <p className="text-xs sm:text-sm text-zinc-500 mt-2 px-2">
-                            Traditional budgeting apps sell your financial habits or drown you in broken bank syncing. AuraLedger takes the high-performance local approach.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-rose-50/40 border border-rose-200/60">
-                            <span className="text-[11px] font-mono text-rose-600 font-bold uppercase tracking-wider">Traditional Money Trackers</span>
-                            <h3 className="text-lg sm:text-xl font-bold text-zinc-900 mt-1.5">Fragile, Leaky & Complex</h3>
-                            <ul className="mt-3.5 space-y-2.5 text-xs sm:text-sm text-zinc-600">
-                                <li className="flex items-start gap-2">
-                                    <span className="text-rose-500 font-bold">✕</span>
-                                    <span><strong>Data Profiling:</strong> Free apps monetize by packaging and profiling your transaction habits.</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="text-rose-500 font-bold">✕</span>
-                                    <span><strong>Bank Sync Glitches:</strong> Open banking connections break frequently and duplicate entries.</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="text-rose-500 font-bold">✕</span>
-                                    <span><strong>Clunky Sheets:</strong> Excel spreadsheets break mobile workflows and require tedious formula upkeep.</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-emerald-50/40 border border-emerald-200/70 shadow-xs">
-                            <span className="text-[11px] font-mono text-emerald-700 font-bold uppercase tracking-wider">The AuraLedger Standard</span>
-                            <h3 className="text-lg sm:text-xl font-bold text-zinc-900 mt-1.5">Sleek, Sovereign & Instant</h3>
-                            <ul className="mt-3.5 space-y-2.5 text-xs sm:text-sm text-zinc-700">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                                    <span><strong>100% Client-Side Sovereignty:</strong> Encrypted in your browser cache. Zero server data profiling.</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                                    <span><strong>Predictive Daily Burn:</strong> Dynamically calculates safe daily spend velocity to prevent end-of-month deficits.</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                                    <span><strong>Multi-Tenant Client Switching:</strong> Switch seamlessly between separate personal, freelance, and business vaults.</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                {/* SECTION 3: CALL TO ACTION CARD */}
-                <div className="mt-16 sm:mt-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#1b0e07] via-[#100703] to-[#050201] text-white p-6 sm:p-12 relative overflow-hidden shadow-xl shadow-orange-950/20">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/20 rounded-full blur-3xl pointer-events-none" />
-                    <div className="relative z-10 max-w-2xl">
-                        <span className="text-[10px] sm:text-xs font-mono text-orange-400 font-bold uppercase tracking-widest">Instant Provisioning</span>
-                        <h2 className="text-2xl sm:text-4xl font-black tracking-tight mt-1.5 leading-tight">
-                            Ready to Upgrade Your Financial Workspace?
-                        </h2>
-                        <p className="text-xs sm:text-sm text-stone-300 mt-2.5 leading-relaxed">
-                            No credit card required. Initialize your local encrypted ledger in less than 30 seconds.
-                        </p>
-                        <div className="mt-6 flex flex-col sm:flex-row items-center gap-2.5">
-                            <button
-                                onClick={() => onOpenAuth("signup")}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] hover:brightness-110 text-white text-xs font-semibold shadow-md active:scale-95 transition-all cursor-pointer"
-                            >
-                                <span>Get Started Now</span>
-                                <ChevronRight className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => onOpenAuth("signin")}
-                                className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-stone-200 text-xs font-semibold backdrop-blur-md active:scale-95 transition-all cursor-pointer"
-                            >
-                                Sign In
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </main>
-
-            {/* FOOTER */}
-            <footer className="relative z-10 bg-white/90 border-t border-stone-200/80 pt-10 pb-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 pb-8 border-b border-stone-100 text-xs">
-                        <div className="col-span-2 sm:col-span-1">
-                            <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-lg bg-orange-600 flex items-center justify-center text-white font-black text-xs">
-                                    A
-                                </div>
-                                <span className="font-bold text-zinc-950">AuraLedger</span>
-                            </div>
-                            <p className="text-stone-500 mt-2 text-[11px] leading-relaxed">
-                                The high-velocity tactile personal finance operating system. Built for privacy, speed, and precision.
-                            </p>
-                        </div>
-
-                        <div>
-                            <h4 className="font-mono font-bold text-zinc-950 uppercase tracking-wider text-[10px] sm:text-[11px] mb-2.5">Modules</h4>
-                            <ul className="space-y-1.5 text-stone-500 text-[11px]">
-                                <li><button onClick={() => onOpenAuth("signin")} className="hover:text-zinc-900 cursor-pointer">Executive HUD</button></li>
-                                <li><button onClick={() => onOpenAuth("signin")} className="hover:text-zinc-900 cursor-pointer">Omni Ledger</button></li>
-                                <li><button onClick={() => onOpenAuth("signin")} className="hover:text-zinc-900 cursor-pointer">Cashflow Matrix</button></li>
-                                <li><button onClick={() => onOpenAuth("signin")} className="hover:text-zinc-900 cursor-pointer">Target Vaults</button></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h4 className="font-mono font-bold text-zinc-950 uppercase tracking-wider text-[10px] sm:text-[11px] mb-2.5">Privacy</h4>
-                            <ul className="space-y-1.5 text-stone-500 text-[11px]">
-                                <li className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-emerald-600" /> Client Sandbox</li>
-                                <li className="flex items-center gap-1"><Lock className="w-3 h-3 text-orange-600" /> Local Encrypted</li>
-                                <li>Zero Data Profiling</li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h4 className="font-mono font-bold text-zinc-950 uppercase tracking-wider text-[10px] sm:text-[11px] mb-2.5">Engine</h4>
-                            <ul className="space-y-1.5 text-stone-500 font-mono text-[10px]">
-                                <li>React 19 Core</li>
-                                <li>Tailwind CSS v4</li>
-                                <li>Framer Motion Physics</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="pt-5 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[10px] sm:text-[11px] font-mono text-stone-400">
-                        <p>© 2026 AuraLedger FinOS. All rights reserved.</p>
-                        <p className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            Engine Status: 100% Operational
-                        </p>
-                    </div>
-                </div>
-            </footer>
-
+                        <span className={`font-black shrink-0 ${isInflow ? "text-emerald-600" : "text-zinc-950"}`}>
+                          {isInflow ? "+" : "-"}${Math.abs(tx.amount).toFixed(2)}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            </div>
+          </motion.div>
         </div>
-    );
+
+        {/* 5. COMPARISON MATRIX (Ceramic Alabaster Slabs) */}
+        <div className="mt-20 sm:mt-28">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-orange-600 font-bold">
+              The Architecture Shift
+            </span>
+            <p className="text-2xl sm:text-4xl font-extrabold text-zinc-950 mt-1.5 tracking-[-0.03em]">
+              Why High-Growth Builders Abandon Spreadsheets
+            </p>
+            <p className="text-xs sm:text-sm text-stone-500 mt-2 px-2 font-normal leading-relaxed">
+              Traditional expense apps track money after it is already lost. AuraLedger calculates real-time daily burn velocity to prevent runway exhaustion before it happens.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-7">
+            {/* Traditional Card */}
+            <div className="p-7 sm:p-9 rounded-[32px] bg-white/80 backdrop-blur-xl border border-rose-200/60 shadow-[0_15px_40px_-15px_rgba(244,63,94,0.06)] space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                <span className="text-[11px] font-mono text-rose-600 font-bold uppercase tracking-wider">
+                  Traditional Spreadsheets & Trackers
+                </span>
+                <span className="w-2 h-2 rounded-full bg-rose-400" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-950">
+                Fragile, Leaky & Tedious
+              </h3>
+              <ul className="space-y-3.5 text-xs sm:text-sm text-stone-600">
+                <li className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <X className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><strong className="text-zinc-900">Formulas Break:</strong> Multi-currency conversions and tax partitions ruin spreadsheet cells unpredictably.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <X className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><strong className="text-zinc-900">Mobile Friction:</strong> Adding an expense on mobile is clumsy and gets abandoned after three days.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <X className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><strong className="text-zinc-900">Cloud Profiling:</strong> Consumer budget apps monetize your spending habits with third-party advertisers.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* AuraLedger Card */}
+            <div className="p-7 sm:p-9 rounded-[32px] bg-white/90 backdrop-blur-xl border border-emerald-300/60 shadow-[0_20px_50px_-15px_rgba(16,185,129,0.1)] space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                <span className="text-[11px] font-mono text-emerald-700 font-bold uppercase tracking-wider">
+                  The AuraLedger Standard
+                </span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-950">
+                Tactile, Deterministic & Sovereign
+              </h3>
+              <ul className="space-y-3.5 text-xs sm:text-sm text-stone-600">
+                <li className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><strong className="text-zinc-900">1-Click Fast Ingestion:</strong> Record expenses in under 3 seconds with category tags and vault routing.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><strong className="text-zinc-900">Predictive Daily Burn:</strong> Real-time burn pacing calculates safe daily velocity to safeguard reserves.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><strong className="text-zinc-900">100% Client-Side Sovereignty:</strong> All transactions live encrypted in your browser. Zero server leaks.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. CLEAN CTA MONOLITH */}
+        <div className="mt-20 sm:mt-28 rounded-[36px] bg-gradient-to-b from-[#180e07] via-[#0f0703] to-[#050201] text-white p-8 sm:p-14 relative overflow-hidden shadow-xl shadow-orange-950/20">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-orange-600/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 max-w-2xl space-y-3">
+            <span className="text-[10px] sm:text-xs font-mono text-orange-400 font-bold uppercase tracking-widest block">
+              Instant Provisioning
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black font-mono tracking-tight leading-tight">
+              Ready to Master Your Expense Velocity?
+            </h2>
+            <p className="text-xs sm:text-base text-stone-300 font-sans leading-relaxed pt-1">
+              Zero credit card required. Launch your encrypted, client-side expense tracker in less than 30 seconds.
+            </p>
+            <div className="pt-4 flex flex-col sm:flex-row items-center gap-3">
+              <button
+                type="button"
+                onClick={() => onOpenAuth("signup")}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-[#b93815] via-[#ea580c] to-[#f97316] hover:brightness-110 text-white font-mono font-bold text-xs tracking-wider shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>GET STARTED FREE</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenAuth("signin")}
+                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white/10 hover:bg-white/15 text-stone-200 text-xs font-mono font-semibold backdrop-blur-md active:scale-95 transition-all cursor-pointer"
+              >
+                Sign In to Vault
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      {/* ========================================================================= */}
+      {/* 7. THE $20,000 ARCHITECTURAL MONOLITH FOOTER (Elevated Luxury Experience) */}
+      {/* ========================================================================= */}
+      <footer className="relative z-10 w-full pt-10 pb-12 px-4 sm:px-8 max-w-[1450px] mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="rounded-[40px] bg-white/85 backdrop-blur-2xl border border-stone-200/80 shadow-[0_25px_70px_-20px_rgba(0,0,0,0.06),0_1px_1.5px_rgba(255,255,255,1)_inset] p-8 sm:p-12 overflow-hidden relative"
+        >
+          {/* Subtle Ambient Caustic Light Sweep across Footer Top */}
+          <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-orange-400/40 to-transparent pointer-events-none" />
+
+          {/* Top Row: Brand & Architectural Navigation */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-10 sm:gap-12 pb-10 border-b border-stone-100">
+            
+            {/* Brand Manifesto Column (Span 2) */}
+            <div className="md:col-span-2 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-zinc-950 text-white flex items-center justify-center p-[1px] shadow-sm shadow-zinc-950/20">
+                  <div className="w-full h-full rounded-[15px] bg-[#140803] flex items-center justify-center border border-orange-500/20">
+                    <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-orange-500" fill="none">
+                      <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                      <path d="M12 3V12M12 12L20 7.5M12 12L4 7.5M12 12V21" stroke="#fdba74" strokeWidth="1.2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight text-zinc-950 font-mono">AuraLedger</h3>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400">Autonomous FinOS</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-stone-500 font-sans leading-relaxed max-w-sm">
+                The high-velocity tactile personal finance operating system. Built for sovereign operators, founders, and creators who demand absolute privacy and zero cloud profiling.
+              </p>
+
+              {/* Verified Protocol Badges */}
+              <div className="flex items-center gap-2 pt-1">
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone-100 text-stone-700 border border-stone-200/80 flex items-center gap-1.5 shadow-2xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  AES-256 Vault Sandboxing
+                </span>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone-100 text-stone-700 border border-stone-200/80 flex items-center gap-1.5 shadow-2xs">
+                  <Lock className="w-3 h-3 text-orange-600" />
+                  Zero Telemetry
+                </span>
+              </div>
+            </div>
+
+            {/* Column 2: System HUD */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-950">
+                Core Modules
+              </h4>
+              <ul className="space-y-2 text-xs font-mono text-stone-500">
+                {[
+                  { label: "Executive HUD", action: () => onOpenAuth("signin") },
+                  { label: "Omni Ledger", action: () => onOpenAuth("signin") },
+                  { label: "Cashflow Matrix", action: () => onOpenAuth("signin") },
+                  { label: "Multi-Vault Registry", action: () => onOpenAuth("signin") }
+                ].map((item, idx) => (
+                  <li key={idx}>
+                    <button
+                      type="button"
+                      onClick={item.action}
+                      className="hover:text-zinc-950 hover:translate-x-1 flex items-center gap-1.5 transition-all cursor-pointer group"
+                    >
+                      <span className="w-1 h-1 rounded-full bg-stone-300 group-hover:bg-orange-500 transition-colors" />
+                      <span>{item.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 3: Architecture Protocol */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-950">
+                Architecture
+              </h4>
+              <ul className="space-y-2 text-xs font-mono text-stone-500">
+                {[
+                  { label: "Client Isolation", action: () => onOpenAuth("signin") },
+                  { label: "Kinetic Partition Engine", action: () => onOpenAuth("signin") },
+                  { label: "Autonomous Equilibrium", action: () => onOpenAuth("signin") },
+                  { label: "Runway Breach Guard", action: () => onOpenAuth("signin") }
+                ].map((item, idx) => (
+                  <li key={idx}>
+                    <button
+                      type="button"
+                      onClick={item.action}
+                      className="hover:text-zinc-950 hover:translate-x-1 flex items-center gap-1.5 transition-all cursor-pointer group"
+                    >
+                      <span className="w-1 h-1 rounded-full bg-stone-300 group-hover:bg-emerald-500 transition-colors" />
+                      <span>{item.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 4: Engine Diagnostics */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-950">
+                Telemetry
+              </h4>
+              <div className="p-3.5 rounded-2xl bg-stone-50/80 border border-stone-200/70 space-y-2 font-mono text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-400">Status:</span>
+                  <span className="text-emerald-600 font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Nominal
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-400">Engine:</span>
+                  <span className="text-zinc-800 font-semibold">React 19 Core</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-400">Latency:</span>
+                  <span className="text-orange-600 font-bold">0.02ms Local</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Row: Legal, Sovereignty & High-Tech Status Pill */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-stone-400">
+            <div className="flex items-center gap-2">
+              <span>© 2026 AuraLedger OS.</span>
+              <span className="text-stone-300">•</span>
+              <span>All rights reserved.</span>
+            </div>
+
+            {/* High-Contrast Luxury Telemetry Pill */}
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-full bg-stone-100/90 border border-stone-200/80 text-stone-600 flex items-center gap-1.5 text-[11px] font-semibold">
+                <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
+                <span>Deterministic Engine Active</span>
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      </footer>
+    </div>
+  );
 }

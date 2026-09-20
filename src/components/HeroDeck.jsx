@@ -10,9 +10,11 @@ import {
   ShieldCheck,
   CreditCard,
   Plus,
-  Flame
+  Flame,
+  ArrowLeftRight
 } from "lucide-react";
 import { formatCurrency } from "../utils/formatters";
+import { CURRENCIES } from "../types/models";
 import AntiGravityCanvas from "./AntiGravityCanvas";
 
 // Motion Variants for Staggered Choreography
@@ -41,7 +43,7 @@ const itemVariants = {
 
 export default function HeroDeck({ 
   userProfile, 
-  currentCurrency, 
+  currentCurrency = "USD", 
   transactions = [], 
   onOpenNewTransaction 
 }) {
@@ -55,17 +57,18 @@ export default function HeroDeck({
   const firstName = userProfile?.name ? userProfile.name.split(" ")[0] : "Commander";
 
   const { totalOutflow, netBalance } = useMemo(() => {
-    let inflow = userProfile?.startingBalance || 0;
+    let inflow = Number(userProfile?.startingBalance) || 0;
     let outflow = 0;
 
     transactions.forEach((tx) => {
-      if (tx.type === "income") inflow += tx.amount;
-      if (tx.type === "expense") outflow += tx.amount;
+      const amt = Number(tx.amount) || 0;
+      if (tx.type === "income") inflow += amt;
+      if (tx.type === "expense") outflow += amt;
     });
 
     return {
       totalOutflow: outflow,
-      netBalance: inflow - outflow
+      netBalance: Math.max(0, inflow - outflow)
     };
   }, [transactions, userProfile]);
 
@@ -73,6 +76,8 @@ export default function HeroDeck({
   const currentDay = new Date().getDate();
   const daysRemaining = Math.max(1, daysInMonth - currentDay);
   const safeDailySpend = Math.max(0, netBalance / daysRemaining);
+
+  const activeCurrencyMeta = CURRENCIES[currentCurrency] || CURRENCIES.USD;
 
   return (
     <motion.section 
@@ -112,6 +117,14 @@ export default function HeroDeck({
                 <Flame className="w-3 h-3 text-amber-400" />
                 <span>Runway: Optimal</span>
               </span>
+
+              {/* Live FX Exchange Rate Pill (Active only when currency is not USD) */}
+              {currentCurrency !== "USD" && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-black/40 backdrop-blur-md text-amber-300 border border-amber-400/30 shrink-0 shadow-xs">
+                  <ArrowLeftRight className="w-3 h-3 text-amber-400" />
+                  <span>FX: $1.00 = {activeCurrencyMeta.symbol}{activeCurrencyMeta.rate} {currentCurrency}</span>
+                </span>
+              )}
             </motion.div>
 
             {/* Typography Section */}
@@ -166,7 +179,7 @@ export default function HeroDeck({
                 <span className="text-[10px] font-mono uppercase tracking-wider font-semibold">Net Liquidity</span>
               </div>
               <motion.p 
-                key={netBalance}
+                key={`${netBalance}-${currentCurrency}`}
                 initial={{ opacity: 0.7, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
@@ -196,7 +209,7 @@ export default function HeroDeck({
                 <span className="text-[10px] font-mono uppercase tracking-wider font-semibold">Total Outflow</span>
               </div>
               <motion.p 
-                key={totalOutflow}
+                key={`${totalOutflow}-${currentCurrency}`}
                 initial={{ opacity: 0.7, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
@@ -226,7 +239,7 @@ export default function HeroDeck({
                 <span className="text-[10px] font-mono uppercase tracking-wider font-bold">Safe Daily Burn</span>
               </div>
               <motion.p 
-                key={safeDailySpend}
+                key={`${safeDailySpend}-${currentCurrency}`}
                 initial={{ opacity: 0.7, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
