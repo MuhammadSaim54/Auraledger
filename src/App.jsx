@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
 import Navbar from "./components/Navbar";
 import HeroDeck from "./components/HeroDeck";
 import CashflowMatrix from "./components/CashflowMatrix";
@@ -6,6 +7,9 @@ import CategorySpectrum from "./components/CategorySpectrum";
 import RunwayPredictor from "./components/RunwayPredictor";
 import LedgerViewport from "./components/LedgerViewport";
 import AnalyticsViewport from "./components/AnalyticsViewport";
+import VaultsViewport from "./components/VaultsViewport";
+import ParallaxMonolithCard from "./components/ParallaxMonolithCard";
+import BotanicalCradle from "./components/BotanicalCradle";
 import AuthModal from "./components/AuthModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
 import TransactionModal from "./components/TransactionModal";
@@ -16,7 +20,7 @@ export default function App() {
   const [currentCurrency, setCurrentCurrency] = useState("USD");
   const [currentUser, setCurrentUser] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [vaults, setVaults] = useState([]);
+  const [vaultTransfers, setVaultTransfers] = useState([]);
 
   // Auth Dialog Controller
   const [authDialog, setAuthDialog] = useState({ isOpen: false, mode: "signin" });
@@ -48,10 +52,10 @@ export default function App() {
     if (savedData) {
       const parsed = JSON.parse(savedData);
       setTransactions(parsed.transactions || []);
-      setVaults(parsed.vaults || []);
+      setVaultTransfers(parsed.vaultTransfers || []);
     } else {
       setTransactions([]);
-      setVaults([]);
+      setVaultTransfers([]);
     }
   }, []);
 
@@ -66,7 +70,7 @@ export default function App() {
     localStorage.removeItem("auraledger_active_user_id");
     setCurrentUser(null);
     setTransactions([]);
-    setVaults([]);
+    setVaultTransfers([]);
   };
 
   const handleOpenAuth = (mode = "signin") => {
@@ -94,7 +98,7 @@ export default function App() {
     const payload = {
       ...existingData,
       transactions: updatedTransactions,
-      vaults: vaults.length > 0 ? vaults : existingData.vaults || []
+      vaultTransfers
     };
 
     localStorage.setItem(userStorageKey, JSON.stringify(payload));
@@ -113,7 +117,26 @@ export default function App() {
     const payload = {
       ...existingData,
       transactions: updatedTransactions,
-      vaults: vaults.length > 0 ? vaults : existingData.vaults || []
+      vaultTransfers
+    };
+
+    localStorage.setItem(userStorageKey, JSON.stringify(payload));
+  };
+
+  // Internal Vault Transfer Handler
+  const handleExecuteVaultTransfer = (transferData) => {
+    if (!currentUser) return;
+
+    const updatedTransfers = [transferData, ...vaultTransfers];
+    setVaultTransfers(updatedTransfers);
+
+    const userStorageKey = `auraledger_data_${currentUser.id}`;
+    const existingData = JSON.parse(localStorage.getItem(userStorageKey) || "{}");
+
+    const payload = {
+      ...existingData,
+      transactions,
+      vaultTransfers: updatedTransfers
     };
 
     localStorage.setItem(userStorageKey, JSON.stringify(payload));
@@ -129,7 +152,43 @@ export default function App() {
     return Math.max(0, base + netDelta);
   }, [currentUser, transactions]);
 
-  // 1. If NO USER IS LOGGED IN -> Show Premium Landing Page
+  // Dynamic Vault Balances Computation
+  const vaultBalances = useMemo(() => {
+    const totalBase = Number(currentUser?.startingBalance) || 0;
+
+    let primary = totalBase * 0.5;
+    let reserve = totalBase * 0.3;
+    let growth = totalBase * 0.2;
+
+    transactions.forEach((tx) => {
+      const amt = Number(tx.amount) || 0;
+      const factor = tx.type === "income" ? 1 : -1;
+      const vId = tx.vaultId || "primary";
+
+      if (vId === "reserve") reserve += amt * factor;
+      else if (vId === "growth") growth += amt * factor;
+      else primary += amt * factor;
+    });
+
+    vaultTransfers.forEach((tr) => {
+      const amt = Number(tr.amount) || 0;
+      if (tr.sourceVault === "primary") primary -= amt;
+      if (tr.sourceVault === "reserve") reserve -= amt;
+      if (tr.sourceVault === "growth") growth -= amt;
+
+      if (tr.targetVault === "primary") primary += amt;
+      if (tr.targetVault === "reserve") reserve += amt;
+      if (tr.targetVault === "growth") growth += amt;
+    });
+
+    return {
+      primary: Math.max(0, Math.round(primary)),
+      reserve: Math.max(0, Math.round(reserve)),
+      growth: Math.max(0, Math.round(growth))
+    };
+  }, [currentUser, transactions, vaultTransfers]);
+
+  // 1. Landing View for Non-authenticated State
   if (!currentUser) {
     return (
       <>
@@ -145,12 +204,29 @@ export default function App() {
     );
   }
 
-  // 2. If LOGGED IN -> Show Main FinTech Application Shell
+  // 2. Main Executive Operating System Shell
   return (
-    <div className="min-h-screen w-full bg-[#fbfaf8] text-zinc-900 pb-20 font-sans">
+    <div className="min-h-screen w-full bg-[#fbfaf8] text-zinc-900 pb-24 font-sans overflow-x-hidden">
+      {/* Living Atmospheric Aurora Glows */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 right-10 w-[500px] h-[500px] bg-gradient-to-bl from-orange-200/25 to-transparent rounded-full blur-3xl" />
-        <div className="absolute top-80 -left-20 w-[400px] h-[400px] bg-gradient-to-tr from-amber-100/35 to-transparent rounded-full blur-3xl" />
+        <motion.div 
+          animate={{
+            scale: [1, 1.25, 1],
+            rotate: [0, 45, 0],
+            opacity: [0.25, 0.4, 0.25]
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-40 right-10 w-[650px] h-[650px] bg-gradient-to-bl from-orange-300/30 via-amber-200/20 to-transparent rounded-full blur-[100px]" 
+        />
+        <motion.div 
+          animate={{
+            scale: [1.1, 0.9, 1.1],
+            rotate: [0, -35, 0],
+            opacity: [0.2, 0.35, 0.2]
+          }}
+          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-80 -left-20 w-[550px] h-[550px] bg-gradient-to-tr from-amber-200/35 via-orange-100/20 to-transparent rounded-full blur-[100px]" 
+        />
       </div>
 
       <Navbar
@@ -175,23 +251,37 @@ export default function App() {
 
         {/* 1. Dashboard Viewport */}
         {activeTab === "dashboard" && (
-          <div className="space-y-6 sm:space-y-8">
-            <CashflowMatrix
-              transactions={transactions}
-              startingBalance={currentNetLiquidity}
-              currentCurrency={currentCurrency}
-            />
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-              <CategorySpectrum 
-                transactions={transactions} 
-                currentCurrency={currentCurrency} 
-              />
-              <RunwayPredictor
-                currentBalance={currentNetLiquidity}
+          <div className="space-y-8 sm:space-y-12 select-none">
+            {/* Cashflow Matrix: Flagship Parallax Monolith */}
+            <ParallaxMonolithCard
+              floatDelay={0}
+              accentGlow="rgba(234, 88, 12, 0.2)"
+            >
+              <CashflowMatrix
                 transactions={transactions}
+                startingBalance={currentNetLiquidity}
                 currentCurrency={currentCurrency}
               />
+            </ParallaxMonolithCard>
+
+            {/* Asymmetrical Floating Dual Tier with Botanical Leaf Cradles */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-14 pt-4 [transform-style:preserve-3d]">
+              {/* Left Card: Emerald Botanical Canopy Cradle */}
+              <BotanicalCradle variant="emerald" floatDelay={0}>
+                <CategorySpectrum 
+                  transactions={transactions} 
+                  currentCurrency={currentCurrency} 
+                />
+              </BotanicalCradle>
+
+              {/* Right Card: Amber Botanical Canopy Cradle */}
+              <BotanicalCradle variant="amber" floatDelay={0.4}>
+                <RunwayPredictor
+                  currentBalance={currentNetLiquidity}
+                  transactions={transactions}
+                  currentCurrency={currentCurrency}
+                />
+              </BotanicalCradle>
             </div>
           </div>
         )}
@@ -214,8 +304,19 @@ export default function App() {
           />
         )}
 
-        {/* 4. Modular Viewport for Other Tabs (Vaults / Settings) */}
-        {activeTab !== "dashboard" && activeTab !== "analytics" && activeTab !== "ledger" && (
+        {/* 4. Vaults Viewport */}
+        {activeTab === "vaults" && (
+          <VaultsViewport
+            vaultBalances={vaultBalances}
+            totalLiquidity={currentNetLiquidity}
+            onExecuteTransfer={handleExecuteVaultTransfer}
+            transferHistory={vaultTransfers}
+            currentCurrency={currentCurrency}
+          />
+        )}
+
+        {/* 5. Executive Workspaces */}
+        {activeTab !== "dashboard" && activeTab !== "analytics" && activeTab !== "ledger" && activeTab !== "vaults" && (
           <div className="rounded-3xl border border-dashed border-stone-200/90 p-8 sm:p-12 text-center bg-white/50 backdrop-blur-sm">
             <p className="text-xs font-mono uppercase tracking-widest text-zinc-400">Executive Workspace</p>
             <h3 className="text-xl font-bold text-zinc-900 capitalize mt-1">{activeTab} Viewport</h3>
