@@ -31,6 +31,7 @@ export default function App() {
   // Fast Ingest Transaction Modal Controller
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
 
+  // Initial User Session Loader
   useEffect(() => {
     const activeUserId = localStorage.getItem("auraledger_active_user_id");
     const existingUsers = JSON.parse(localStorage.getItem("auraledger_users") || "[]");
@@ -44,6 +45,17 @@ export default function App() {
       }
     }
   }, []);
+
+  // Top Scroll Reset on Viewport / Tab Transition
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant"
+    });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [activeTab]);
 
   const loadUserData = useCallback((userId) => {
     const userStorageKey = `auraledger_data_${userId}`;
@@ -206,14 +218,14 @@ export default function App() {
 
   // 2. Main Executive Operating System Shell
   return (
-    <div className="min-h-screen w-full bg-[#fbfaf8] text-zinc-900 pb-24 font-sans overflow-x-hidden">
-      {/* Living Atmospheric Aurora Glows */}
+    <div className="min-h-screen w-full bg-[#fbfaf8] text-zinc-900 pb-28 font-sans">
+      {/* Living Atmospheric Aurora Glows (Fixed to prevent sticky scroll conflicts) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <motion.div 
           animate={{
             scale: [1, 1.25, 1],
             rotate: [0, 45, 0],
-            opacity: [0.25, 0.4, 0.25]
+            opacity: [0.22, 0.35, 0.22]
           }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
           className="absolute -top-40 right-10 w-[650px] h-[650px] bg-gradient-to-bl from-orange-300/30 via-amber-200/20 to-transparent rounded-full blur-[100px]" 
@@ -222,13 +234,14 @@ export default function App() {
           animate={{
             scale: [1.1, 0.9, 1.1],
             rotate: [0, -35, 0],
-            opacity: [0.2, 0.35, 0.2]
+            opacity: [0.18, 0.3, 0.18]
           }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-80 -left-20 w-[550px] h-[550px] bg-gradient-to-tr from-amber-200/35 via-orange-100/20 to-transparent rounded-full blur-[100px]" 
         />
       </div>
 
+      {/* Sticky Custom Tactile FinOS Navbar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -240,7 +253,7 @@ export default function App() {
         onOpenChangePassword={() => setIsPasswordModalOpen(true)}
       />
 
-      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-8 space-y-6 sm:space-y-8">
+      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-8 pt-4 space-y-6 sm:space-y-8">
         {/* Executive Cockpit Header */}
         <HeroDeck 
           userProfile={currentUser} 
@@ -265,7 +278,7 @@ export default function App() {
             </ParallaxMonolithCard>
 
             {/* Asymmetrical Floating Dual Tier with Botanical Leaf Cradles */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-14 pt-4 [transform-style:preserve-3d]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-14 pt-4 sm:[transform-style:preserve-3d]">
               {/* Left Card: Emerald Botanical Canopy Cradle */}
               <BotanicalCradle variant="emerald" floatDelay={0}>
                 <CategorySpectrum 

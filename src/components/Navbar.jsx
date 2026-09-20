@@ -231,7 +231,6 @@ export default function Navbar({
 
                                         {/* Actions Group */}
                                         <div className="pt-1.5 border-t border-stone-100 space-y-1">
-                                            {/* Change Password Button */}
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -246,7 +245,6 @@ export default function Navbar({
                                                 </span>
                                             </button>
 
-                                            {/* Sign Out Button */}
                                             <button
                                                 type="button"
                                                 onClick={() => {
